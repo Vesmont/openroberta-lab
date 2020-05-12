@@ -15,6 +15,7 @@ import de.fhg.iais.roberta.syntax.action.light.LightAction;
 import de.fhg.iais.roberta.syntax.action.light.LightStatusAction;
 import de.fhg.iais.roberta.syntax.action.motor.MotorOnAction;
 import de.fhg.iais.roberta.syntax.action.motor.MotorStopAction;
+import de.fhg.iais.roberta.syntax.action.motor.differential.DriveAction;
 import de.fhg.iais.roberta.syntax.action.sound.PlayNoteAction;
 import de.fhg.iais.roberta.syntax.action.sound.ToneAction;
 import de.fhg.iais.roberta.syntax.lang.stmt.AssertStmt;
@@ -61,6 +62,11 @@ public class OrbStackMachineVisitor<V> extends AbstractStackMachineVisitor<V> im
         } else {
             throw new DbcException("No robot name or no port!");
         }
+    }
+
+    @Override
+    public V visitDriveAction(DriveAction<V> driveAction) {
+        return null;
     }
 
     @Override

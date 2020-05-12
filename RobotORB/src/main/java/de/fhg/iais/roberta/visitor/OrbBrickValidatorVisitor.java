@@ -9,6 +9,7 @@ import de.fhg.iais.roberta.components.ConfigurationComponent;
 import de.fhg.iais.roberta.components.UsedSensor;
 import de.fhg.iais.roberta.syntax.SC;
 import de.fhg.iais.roberta.syntax.action.motor.MotorOnAction;
+import de.fhg.iais.roberta.syntax.action.motor.differential.DriveAction;
 import de.fhg.iais.roberta.syntax.sensor.ExternalSensor;
 import de.fhg.iais.roberta.syntax.sensor.generic.HTColorSensor;
 import de.fhg.iais.roberta.typecheck.NepoInfo;
@@ -18,6 +19,11 @@ public class OrbBrickValidatorVisitor extends AbstractBrickValidatorVisitor impl
 
     public OrbBrickValidatorVisitor(ConfigurationAst brickConfiguration, ClassToInstanceMap<IProjectBean.IBuilder<?>> beanBuilders) {
         super(brickConfiguration, beanBuilders);
+    }
+
+    @Override
+    public Void visitDriveAction(DriveAction<Void> driveAction) {
+        return null;
     }
 
     @Override
