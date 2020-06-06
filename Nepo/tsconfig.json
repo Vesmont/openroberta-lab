@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"outDir": "./js",
+		"sourceMap": true,
+		"target": "es5",
+		"rootDir": "./ts",
+		"module": "amd",
+		"moduleResolution": "Node",
+		"baseUrl": "./ts",
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"allowJs": true,
+		"skipLibCheck": true,
+		"lib": [
+			"es2015",
+			"es2017.object",
+			"dom"
+		]
+	},
+	"compileOnSave": true,
+	"buildOnSave": true
+}
