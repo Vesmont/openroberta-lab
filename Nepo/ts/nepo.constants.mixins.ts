@@ -2,7 +2,6 @@
 import * as Blockly from "blockly";
 import { MutatorMinus } from "nepo.mutator.minus";
 import * as Variables from "nepo.variables";
-import { VariableModel } from "nepo.variable.model";
 import { Log } from "utils/nepo.logger";
 
 const LOG = new Log();
@@ -65,15 +64,13 @@ export const VARIABLE_PLUS_MUTATOR_MIXIN = {
 			}
 			let variableDeclare: Blockly.BlockSvg = this.workspace.newBlock('variable_declare');
 			let scopeVars = Variables.getVarScopeList(this);
-			let name: string;
-			if (this.type.indexOf("start") >= 0) {
-				(variableDeclare as any).setVarType("GLOBAL");
-				name = Blockly.Msg["VARIABLES_GLOBAL_DEFAULT_NAME"];
-			} else {
-				(variableDeclare as any).setVarType("LOCAL");
-				name = Blockly.Msg["VARIABLES_LOCAL_DEFAULT_NAME"];
+			if (this.scopeType === "GLOBAL") {
+				scopeVars = Variables.getUniqueVariables(this.workspace);
 			}
+			let name: string;
+			name = Blockly.Msg["VARIABLES_" + this.scopeType + "_DEFAULT_NAME"];
 			Variables.setUniqueName(variableDeclare, scopeVars, name);
+			(variableDeclare as any).setscopeType(this.scopeType);
 			variableDeclare.initSvg();
 			variableDeclare.render();
 			let connection: Blockly.Connection;
@@ -93,8 +90,11 @@ export const VARIABLE_PLUS_MUTATOR_MIXIN = {
 			}
 			connection.connect(variableDeclare.previousConnection);
 			Variables.checkScope(this);
+			if (this.scopeType === "PROC") {
+				let callerList = Blockly.Procedures.getCallers(this.getFieldValue("NAME"), this.workspace);
+				callerList.forEach(caller => (caller as any).addParam(variableDeclare.getFieldValue("VAR")));
+			}
 			Blockly.Events.setGroup(false);
-
 		} else if (num == -1) {
 			// if the last declaration in the stack has been removed, remove the declaration statement
 			this.removeInput("DECL");
@@ -104,7 +104,7 @@ export const VARIABLE_PLUS_MUTATOR_MIXIN = {
 	// scope extension
 	onchange: function(e) {
 		// no need to check scope for global vars (start block) nor for blocks in the toolbox's flyout'
-		if (this.type.indexOf("start") >= 0 || this.isInFlyout) {
+		if (this.scopeType === "GLOBAL" || this.isInFlyout) {
 			return;
 		} else if (e.blockId == this.id && e.type == Blockly.Events.BLOCK_MOVE) {
 			Variables.checkScope(this);
@@ -508,9 +508,9 @@ export const VARIABLE_DECLARATION_MIXIN = {
 			return false;
 		}
 		var container = document.createElement('mutation');
-		container.setAttribute('next', this.next_);
-		container.setAttribute('dataType', this.dataType_);
-		container.setAttribute('varType', this.varType_);
+		container.setAttribute("next", this.next_);
+		container.setAttribute("datatype", this.dataType_);
+		container.setAttribute("scopetype", this.scopeType);
 		return container;
 	},
 	/**
@@ -519,24 +519,18 @@ export const VARIABLE_DECLARATION_MIXIN = {
 	 * @this Blockly.Block
 	 */
 	domToMutation: function(xmlElement) {
-		this.next_ = xmlElement.getAttribute('next') == 'true';
+		this.next_ = xmlElement.getAttribute("next") == 'true';
 		if (this.next_) {
 			this.setNextStatement(this.next_, "declaration_only");
 		}
-		this.dataType_ = xmlElement.getAttribute('dataType');
+		this.dataType_ = xmlElement.getAttribute("datatype");
 		if (this.dataType_) {
 			this.getInput('VALUE').setCheck(this.dataType_);
 		}
-		this.varType_ = xmlElement.getAttribute("varType");
-		if (this.varType_) {
-			this.setVarType(this.varType_);
+		this.scopeType = xmlElement.getAttribute("scopetype");
+		if (this.scopeType) {
+			this.setscopeType(this.scopeType);
 		}
-	},
-	getVariable(): VariableModel {
-		return this.variable_;
-	},
-	setVariable(variable: VariableModel) {
-		this.variable_ = variable;
 	},
 	getScopeId: function() {
 		return this.scopeId_;
@@ -549,6 +543,10 @@ export const VARIABLE_DECLARATION_MIXIN = {
 	},
 	updateShape_: function(num) {
 		if (num == -1) {
+			let procBlock: Blockly.Block = this.getSurroundParent();
+			let callerList = Blockly.Procedures.getCallers(procBlock.getFieldValue("NAME"), this.workspace);
+			let thisVarName = this.variable_.name;
+			let thisscopeType = this.variable_.type;
 			// remove this variable declaration
 			this.workspace.deleteVariableById(this.id);
 			// check if the user confirmed the deletion
@@ -563,7 +561,7 @@ export const VARIABLE_DECLARATION_MIXIN = {
 				} else if (!nextBlock) {
 					parent.setNextStatement(false);
 				}
-
+				callerList.forEach(caller => (caller as any).removeParam(thisVarName, thisscopeType));
 				this.dispose();
 			}
 		}
@@ -583,14 +581,14 @@ export const VARIABLE_DECLARATION_MIXIN = {
 		this.variable_.type = dataType;
 		this.getInput("VALUE").setCheck(dataType);
 	},
-	setVarType: function(varType: string) {
-		this.varType_ = varType;
-		Variables.setStyle(this, this.varType_);
+	setscopeType: function(scopeType: string) {
+		this.scopeType = scopeType;
+		Variables.setStyle(this, this.scopeType);
 	},
 	dispose: function(healStack, animate) {
 		if (this.variable_ && this.workspace.getVariableById(this.variable_.getId())) {
 			this.workspace.deleteVariableById(this.variable_.getId());
-			LOG.warn("delete variable", this);
+			LOG.warn("delete loop variable", this);
 		}
 		(Blockly.BlockSvg as any).prototype.dispose.call(this, !!healStack, animate);
 	}
@@ -666,7 +664,7 @@ export const VARIABLE_MIXIN = {
 			var contextMenuMsg;
 			var id = this.getFieldValue('VAR');
 			var variableModel = this.workspace.getVariableById(id);
-			var varType = variableModel.type;
+			var scopeType = variableModel.type;
 			if (this.type == 'nepo_variables_get') {
 				opposite_type = 'nepo_variables_set';
 				contextMenuMsg = Blockly.Msg['VARIABLES_GET_CREATE_SET'];
@@ -679,8 +677,8 @@ export const VARIABLE_MIXIN = {
 			var name = this.getField('VAR').getText();
 			option["text"] = contextMenuMsg.replace('%1', name);
 			var xmlField = Blockly.utils.xml.createElement('field');
-			xmlField.setAttribute('name', 'VAR');
-			xmlField.setAttribute('variabletype', varType);
+			xmlField.setAttribute("name", 'VAR');
+			xmlField.setAttribute('variabletype', scopeType);
 			xmlField.appendChild(Blockly.utils.xml.createTextNode(name));
 			var xmlBlock = Blockly.utils.xml.createElement('block');
 			xmlBlock.setAttribute('type', opposite_type);
@@ -695,12 +693,12 @@ export const COMMON_TYPE_MIXIN = {
 	mutationToDom: function() {
 		let container = document.createElement('mutation');
 		if (this.dataType_) {
-			container.setAttribute('dataType', this.dataType_);
+			container.setAttribute("datatype", this.dataType_);
 			return container;
 		}
 	},
 	domToMutation: function(xmlElement) {
-		var dataType = xmlElement.getAttribute('dataType');
+		var dataType = xmlElement.getAttribute("datatype");
 		if (dataType) {
 			this.updateDataType(dataType);
 		}
@@ -720,9 +718,6 @@ export const COMMON_TYPE_MIXIN = {
 }
 
 export const INTERNAL_VARIABLE_DECLARATION_MIXIN = {
-	getVariable(): VariableModel {
-		return this.variable_;
-	},
 	getScopeId: function() {
 		return this.scopeId_;
 	},
@@ -740,7 +735,7 @@ export const INTERNAL_VARIABLE_DECLARATION_MIXIN = {
 	},
 	domToMutation: function(xmlElement) {
 		var varDecl = xmlElement.getAttribute('var_decl');
-		if (varDecl && this.workspace.getVariableById(varDecl)) {
+		if (varDecl === this.id) {
 			this.variable_ = this.workspace.getVariableById(varDecl);
 		} else {
 			let name = Variables.getUniqueName(this, [], Blockly.Msg["VARIABLES_LOOP_DEFAULT_NAME"]);
@@ -757,10 +752,150 @@ export const INTERNAL_VARIABLE_DECLARATION_MIXIN = {
 		}
 	},
 	dispose: function(healStack, animate) {
-		if (healStack && this.variable_ && this.workspace.getVariableById(this.variable_.getId())) {
+		if (this.variable_ && this.workspace.getVariableById(this.variable_.getId())) {
 			this.workspace.deleteVariableById(this.variable_.getId());
 			LOG.warn("delete loop variable", this);
 		}
 		(Blockly.BlockSvg as any).prototype.dispose.call(this, !!healStack, animate);
+	}
+};
+
+export const PROCEDURE_MIXIN = {
+
+	/**
+	 * Return the signature of this procedure definition.
+	 * @return {!Array} Tuple containing three elements:
+	 *     - the name of the defined procedure,
+	 *     - a list of all its arguments,
+	 *     - that it DOES NOT have a return value.
+	 * @this {Blockly.Block}
+	 */
+	getProcedureDef: function() {
+		let argList: Array<Blockly.VariableModel> = [];
+		let declBlock: Blockly.Block = this.getInput("DECL") && this.getInput("DECL").connection && this.getInput("DECL").connection.targetBlock();
+		while (declBlock) {
+			argList.push((declBlock as any).variable_.getId());
+			declBlock = declBlock.getNextBlock();
+		}
+		return [this.getFieldValue("NAME"), argList, this.type.indexOf("no") >= 0 ? false : true];
+	},
+	updateDataType: function(dataType) {
+		this.dataType_ = dataType;
+		if (this.outputConnection) {
+			this.outputConnection.setCheck(dataType);
+		} else {
+			for (var i = 0, input; (input = this.inputList[i]); i++) {
+				if (input.connection) {
+					input.connection.setCheck(dataType);
+				}
+			}
+		}
+	},
+	dispose: function(healStack, animate) {
+		if (healStack) {
+			let callerList = Blockly.Procedures.getCallers(this.getFieldValue("NAME"), this.workspace);
+			callerList.forEach(caller => caller.dispose(true));
+		}
+		(Blockly.BlockSvg as any).prototype.dispose.call(this, !!healStack, animate);
+	}
+};
+
+export const PROCEDURE_CALL_MIXIN = {
+	mutationToDom: function() {
+		var container = Blockly.utils.xml.createElement('mutation');
+		container.setAttribute("name", this.getFieldValue("NAME"));
+		let i = 1;
+		let input: Blockly.Input;
+		while (input = this.getInput("ARG" + i)) {
+			var arg = Blockly.utils.xml.createElement('arg');
+			arg.setAttribute("name", input.fieldRow[0].value_);
+			arg.setAttribute("datatype", input.connection.getCheck()[0]);
+			//arg.setAttribute('varId', args[j].getId());
+			container.appendChild(arg);
+			i++;
+			input = this.getInput("ARG" + i)
+		}
+		return container;
+	},
+	/**
+	 * Parse XML to restore the argument inputs.
+	 * @param {!Element} xmlElement XML storage element.
+	 * @this {Blockly.Block}
+	 */
+	domToMutation: function(xmlElement) {
+		var name = xmlElement.getAttribute("name");
+		this.renameProcedure(this.getProcedureCall(), name);
+		for (var x = 0, childNode; childNode = xmlElement.childNodes[x]; x++) {
+			if (childNode.nodeName.toLowerCase() == 'arg') {
+				this.addParam(childNode.getAttribute("name"), childNode.getAttribute("datatype"));
+			}
+		}
+	},
+	/**
+    * Returns the name of the procedure this block calls.
+    * @return {string} Procedure name.
+    * @this {Blockly.Block}
+    */
+	getProcedureCall: function() {
+		// The NAME field is guaranteed to exist, null will never be returned.
+		return /** @type {string} */ (this.getFieldValue("NAME"));
+	},
+	/**
+  * Notification that a procedure is renaming.
+  * If the name matches this block's procedure, rename it.
+  * @param {string} oldName Previous name of procedure.
+  * @param {string} newName Renamed procedure.
+  * @this {Blockly.Block}
+  */
+	renameProcedure: function(oldName, newName) {
+		if (Blockly.Names.equals(oldName, this.getProcedureCall())) {
+			this.setFieldValue(newName, "NAME");
+			var baseMsg = this.outputConnection ?
+				Blockly.Msg['PROCEDURES_CALLRETURN_TOOLTIP'] :
+				Blockly.Msg['PROCEDURES_CALLNORETURN_TOOLTIP'];
+			this.setTooltip(baseMsg.replace('%1', newName));
+		}
+	},
+	/**
+    * Add a parameter from this procedure definition block.
+    * @private
+    * @this {Blockly.Block}
+     */
+	addParam: function(name: string, opt_type?: string) {
+		this.args_++;
+		let thisType = opt_type || "Number";
+		var input = this.appendValueInput('ARG' + this.args_).
+			setAlign(Blockly.ALIGN_RIGHT).
+			appendField(name).
+			setCheck(thisType);
+		input.init();
+	},
+	/**
+    * Add a parameter from this procedure definition block.
+    * @private
+    * @this {Blockly.Block}
+     */
+	removeParam: function(name: string, type: string) {
+		let input: Blockly.Input;
+		let i = 1;
+		let found: boolean = false;
+		while (input = this.getInput("ARG" + i)) {
+			if (input.fieldRow[0].value_ === name && input.connection.getCheck()[0] === type) {
+				this.removeInput("ARG" + i, true);
+				found = true;
+				break;
+			}
+			i++;
+			input = this.getInput("ARG" + i);
+		}
+		if (found) {
+			i++;
+			input = this.getInput("ARG" + i);
+			while (input) {
+				input.name = "ARG" + (i - 1);
+				i++;
+				input = this.getInput("ARG" + i);
+			}
+		}
 	}
 };

@@ -39,10 +39,11 @@ Blockly["Msg"]["MATH_ON_LIST_TOOLTIP_SUM"] = Blockly["Msg"]["MATH_ONLIST_TOOLTIP
 Blockly["Msg"]["TEXT_TOOLTIP"] = Blockly["Msg"]["TEXT_TEXT_TOOLTIP"];
 Blockly["Msg"]["TEXT_COMMENT_TOOLTIP"] = "text comment tooltip";
 Blockly["Msg"]["VARIABLES_GLOBAL_DEFAULT_NAME"] = "item";
-Blockly["Msg"]["VARIABLES_LOCAL_DEFAULT_NAME"] = "param";
+Blockly["Msg"]["VARIABLES_LOCAL_DEFAULT_NAME"] = "item";
 Blockly["Msg"]["VARIABLES_PROC_DEFAULT_NAME"] = "param";
 Blockly["Msg"]["VARIABLES_LOOP_DEFAULT_NAME"] = "i";
 Blockly["Msg"]["VARIABLES_SET"] = "set %1 to %2";
 Blockly["Msg"]["VARIABLES_SCOPE_WARNING"] = "Warning: This block may only be used in the scope of it's declaration block";
+Blockly["Msg"]["PROCEDURES_DEF_PROCEDURE"] = 'doSomething';
 
 

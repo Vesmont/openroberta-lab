@@ -59,6 +59,24 @@ export const COMMON_TYPE_EXTENSION = function() {
 
 export const VARIABLE_SCOPE_EXTENSION = function() {
 	this.varScope = true;
+	switch (this.type) {
+		case "controls_start":
+			this.scopeType = "GLOBAL";
+			break;
+		case "variable_scope":
+			this.scopeType = "LOCAL"
+			break;
+		case "procedures_defnoreturn":
+		case "procedures_defreturn":
+			this.scopeType = "PROC"
+			break;
+		case "controls_for":
+		case "controls_forEach":
+			this.scopeType = "LOOP"
+			break;
+		default:
+			this.scopeType = "LOCAL"
+	}
 }
 
 export const CONTROLS_IF_TOOLTIP_EXTENSION = function() {
@@ -115,7 +133,7 @@ export const VARIABLE_DECLARATION_EXTENSION = function() {
 	this.setMovable(false);
 	let name: string;
 	this.scopeId_ = this.id;
-	this.varType_ = "LOCAL";
+	this.scopeType = "LOCAL";
 	name = Variables.getUniqueName(this, [], Blockly.Msg["VARIABLES_LOCAL_DEFAULT_NAME"]);
 	this.variable_ = this.workspace.createVariable(name, "Number", this.id);
 	this.varDecl = true;
@@ -124,26 +142,18 @@ export const VARIABLE_DECLARATION_EXTENSION = function() {
 	this.next_ = false;
 	this.getField("VAR").setValue(name);
 	this.getField("VAR").setValidator(VARIABLE_DECLARATION_VALIDATOR);
-	(Blockly.FieldDropdown as any).validateOptions_(Nepo.dropdownTypes);
-	this.getField("DATATYPE").menuGenerator_ = Nepo.dropdownTypes;
-	this.getField("DATATYPE").setValidator(function(option: string) {
-		if (option && option !== this.sourceBlock_.getFieldValue('DATATYPE')) {
-			this.sourceBlock_.updateDataType(option);
-		}
-	});
-	this.getField("DATATYPE").doValueUpdate_(Nepo.dropdownTypes[0][1]);
 }
 
 export const INTERNAL_VARIABLE_DECLARATION_EXTENSION = function() {
 	this.mixin(NepoMix.INTERNAL_VARIABLE_DECLARATION_MIXIN, true);
 	this.varScope = true;
 	this.scopeId_ = this.id;
-	this.varType_ = "LOOP";
+	this.dataType_ = "Number";
+	this.scopeType = "LOOP";
 	this.varDecl = true;
 	this.internalVarDecl = true;
 	this.scopeId_ = this.id;
-	this.varType_ = "LOCAL";
-	(this.getField("VAR") as Blockly.FieldTextInput).setEditorValue_(Blockly.Msg["VARIABLES_LOOP_DEFAULT_NAME"]);
+	this.setFieldValue(Blockly.Msg["VARIABLES_LOOP_DEFAULT_NAME"], "VAR");
 	this.getField("VAR").setValidator(VARIABLE_DECLARATION_VALIDATOR);
 }
 
@@ -155,7 +165,7 @@ const VARIABLE_DECLARATION_VALIDATOR = function(newName: string) {
 	let scopeVars = [];
 	let scopeBlock = thisBlock.workspace.getBlockById((thisBlock as any).getScopeId());
 	if (scopeBlock) {
-		if (scopeBlock.type.indexOf("start") >= 0) {
+		if (scopeBlock.scopeType === "GLOBAL") {
 			scopeVars = Variables.getUniqueVariables(scopeBlock.workspace);
 		} else {
 			scopeVars = Variables.getVarScopeList(scopeBlock);
@@ -169,4 +179,30 @@ const VARIABLE_DECLARATION_VALIDATOR = function(newName: string) {
 		thisBlock.workspace.createVariable(name);
 	}
 	return name;
+}
+
+export const PROCEDURE_EXTENSION = function() {
+	this.mixin(NepoMix.PROCEDURE_MIXIN, true);
+	this.varScope = true;
+	this.scopeId_ = this.id;
+	this.varDecl = true;
+	this.setNextStatement(false);
+	this.setPreviousStatement(false);
+	this.getField("NAME").setValidator(Blockly.Procedures.rename);
+}
+
+export const PROCEDURE_CALL_EXTENSION = function() {
+	this.args_ = 0;
+	this.mixin(NepoMix.PROCEDURE_CALL_MIXIN, true);
+}
+
+export const DATATYPE_DROPDOWN_VALIDATOR_EXTENSION = function() {
+	(Blockly.FieldDropdown as any).validateOptions_(Nepo.dropdownTypes);
+	this.getField("DATATYPE").menuGenerator_ = Nepo.dropdownTypes;
+	this.getField("DATATYPE").setValidator(function(option: string) {
+		if (option && option !== this.sourceBlock_.getFieldValue('DATATYPE')) {
+			this.sourceBlock_.updateDataType(option);
+		}
+	});
+	this.getField("DATATYPE").doValueUpdate_(Nepo.dropdownTypes[0][1]);
 }

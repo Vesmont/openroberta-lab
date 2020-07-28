@@ -15,10 +15,12 @@ define(["require", "exports", "blockly", "nepo.constants.extensions", "nepo.cons
     Blockly.Extensions.register("text_comments", NepoExt.TEXT_COMMENTS_EXTENSION);
     Blockly.Extensions.register("text_comment_validator", NepoExt.TEXT_COMMENTS_VALIDATOR);
     Blockly.Extensions.registerMutators("variable_minus_mutator", "mutatorMinus", NepoMix.VARIABLE_DECLARATION_MIXIN);
-    //Blockly.Extensions.register("common_type_extension", NepoExt.COMMON_TYPE_EXTENSION);
+    Blockly.Extensions.register("datatype_dropdown_validator_extension", NepoExt.DATATYPE_DROPDOWN_VALIDATOR_EXTENSION);
     Blockly.Extensions.register("variable_declaration_extension", NepoExt.VARIABLE_DECLARATION_EXTENSION);
     Blockly.Extensions.register("variable_extension", NepoExt.VARIABLE_EXTENSION);
     Blockly.Extensions.register("internal_variable_declaration_extension", NepoExt.INTERNAL_VARIABLE_DECLARATION_EXTENSION);
     Blockly.Extensions.registerMixin('common_type_mixin', NepoMix.COMMON_TYPE_MIXIN);
+    Blockly.Extensions.register("procedure_extension", NepoExt.PROCEDURE_EXTENSION);
+    Blockly.Extensions.register("procedure_call_extension", NepoExt.PROCEDURE_CALL_EXTENSION);
 });
 //# sourceMappingURL=nepo.extensions.js.map

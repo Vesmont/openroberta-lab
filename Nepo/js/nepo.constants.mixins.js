@@ -1,7 +1,7 @@
 define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables", "utils/nepo.logger"], function (require, exports, Blockly, nepo_mutator_minus_1, Variables, nepo_logger_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.INTERNAL_VARIABLE_DECLARATION_MIXIN = exports.COMMON_TYPE_MIXIN = exports.VARIABLE_MIXIN = exports.VARIABLE_DECLARATION_MIXIN = exports.COMMENTS_IMAGE_MIXIN = exports.TEXT_JOIN_MUTATOR_MIXIN = exports.QUOTE_IMAGE_MIXIN = exports.IS_DIVISIBLEBY_MUTATOR_MIXIN = exports.CONTROLS_WAIT_FOR_MUTATOR_MIXIN = exports.CONTROLS_IF_MUTATOR_MIXIN = exports.VARIABLE_PLUS_MUTATOR_MIXIN = void 0;
+    exports.PROCEDURE_CALL_MIXIN = exports.PROCEDURE_MIXIN = exports.INTERNAL_VARIABLE_DECLARATION_MIXIN = exports.COMMON_TYPE_MIXIN = exports.VARIABLE_MIXIN = exports.VARIABLE_DECLARATION_MIXIN = exports.COMMENTS_IMAGE_MIXIN = exports.TEXT_JOIN_MUTATOR_MIXIN = exports.QUOTE_IMAGE_MIXIN = exports.IS_DIVISIBLEBY_MUTATOR_MIXIN = exports.CONTROLS_WAIT_FOR_MUTATOR_MIXIN = exports.CONTROLS_IF_MUTATOR_MIXIN = exports.VARIABLE_PLUS_MUTATOR_MIXIN = void 0;
     var LOG = new nepo_logger_1.Log();
     LOG;
     exports.VARIABLE_PLUS_MUTATOR_MIXIN = {
@@ -59,20 +59,17 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
                     this.getInput("DECL").connection.setCheck('declaration_only');
                     this.declare_ = true;
                 }
-                var variableDeclare = this.workspace.newBlock('variable_declare');
+                var variableDeclare_1 = this.workspace.newBlock('variable_declare');
                 var scopeVars = Variables.getVarScopeList(this);
+                if (this.scopeType === "GLOBAL") {
+                    scopeVars = Variables.getUniqueVariables(this.workspace);
+                }
                 var name_1;
-                if (this.type.indexOf("start") >= 0) {
-                    variableDeclare.setVarType("GLOBAL");
-                    name_1 = Blockly.Msg["VARIABLES_GLOBAL_DEFAULT_NAME"];
-                }
-                else {
-                    variableDeclare.setVarType("LOCAL");
-                    name_1 = Blockly.Msg["VARIABLES_LOCAL_DEFAULT_NAME"];
-                }
-                Variables.setUniqueName(variableDeclare, scopeVars, name_1);
-                variableDeclare.initSvg();
-                variableDeclare.render();
+                name_1 = Blockly.Msg["VARIABLES_" + this.scopeType + "_DEFAULT_NAME"];
+                Variables.setUniqueName(variableDeclare_1, scopeVars, name_1);
+                variableDeclare_1.setscopeType(this.scopeType);
+                variableDeclare_1.initSvg();
+                variableDeclare_1.render();
                 var connection = void 0;
                 if (this.getInput("DECL").connection.targetConnection) {
                     var block = this.getInput("DECL").connection.targetConnection.sourceBlock_;
@@ -89,8 +86,12 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
                 else {
                     connection = this.getInput("DECL").connection;
                 }
-                connection.connect(variableDeclare.previousConnection);
+                connection.connect(variableDeclare_1.previousConnection);
                 Variables.checkScope(this);
+                if (this.scopeType === "PROC") {
+                    var callerList = Blockly.Procedures.getCallers(this.getFieldValue("NAME"), this.workspace);
+                    callerList.forEach(function (caller) { return caller.addParam(variableDeclare_1.getFieldValue("VAR")); });
+                }
                 Blockly.Events.setGroup(false);
             }
             else if (num == -1) {
@@ -102,7 +103,7 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
         // scope extension
         onchange: function (e) {
             // no need to check scope for global vars (start block) nor for blocks in the toolbox's flyout'
-            if (this.type.indexOf("start") >= 0 || this.isInFlyout) {
+            if (this.scopeType === "GLOBAL" || this.isInFlyout) {
                 return;
             }
             else if (e.blockId == this.id && e.type == Blockly.Events.BLOCK_MOVE) {
@@ -483,9 +484,9 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
                 return false;
             }
             var container = document.createElement('mutation');
-            container.setAttribute('next', this.next_);
-            container.setAttribute('dataType', this.dataType_);
-            container.setAttribute('varType', this.varType_);
+            container.setAttribute("next", this.next_);
+            container.setAttribute("datatype", this.dataType_);
+            container.setAttribute("scopetype", this.scopeType);
             return container;
         },
         /**
@@ -494,24 +495,18 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
          * @this Blockly.Block
          */
         domToMutation: function (xmlElement) {
-            this.next_ = xmlElement.getAttribute('next') == 'true';
+            this.next_ = xmlElement.getAttribute("next") == 'true';
             if (this.next_) {
                 this.setNextStatement(this.next_, "declaration_only");
             }
-            this.dataType_ = xmlElement.getAttribute('dataType');
+            this.dataType_ = xmlElement.getAttribute("datatype");
             if (this.dataType_) {
                 this.getInput('VALUE').setCheck(this.dataType_);
             }
-            this.varType_ = xmlElement.getAttribute("varType");
-            if (this.varType_) {
-                this.setVarType(this.varType_);
+            this.scopeType = xmlElement.getAttribute("scopetype");
+            if (this.scopeType) {
+                this.setscopeType(this.scopeType);
             }
-        },
-        getVariable: function () {
-            return this.variable_;
-        },
-        setVariable: function (variable) {
-            this.variable_ = variable;
         },
         getScopeId: function () {
             return this.scopeId_;
@@ -524,6 +519,10 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
         },
         updateShape_: function (num) {
             if (num == -1) {
+                var procBlock = this.getSurroundParent();
+                var callerList = Blockly.Procedures.getCallers(procBlock.getFieldValue("NAME"), this.workspace);
+                var thisVarName_1 = this.variable_.name;
+                var thisscopeType_1 = this.variable_.type;
                 // remove this variable declaration
                 this.workspace.deleteVariableById(this.id);
                 // check if the user confirmed the deletion
@@ -539,6 +538,7 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
                     else if (!nextBlock) {
                         parent_1.setNextStatement(false);
                     }
+                    callerList.forEach(function (caller) { return caller.removeParam(thisVarName_1, thisscopeType_1); });
                     this.dispose();
                 }
             }
@@ -558,14 +558,14 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
             this.variable_.type = dataType;
             this.getInput("VALUE").setCheck(dataType);
         },
-        setVarType: function (varType) {
-            this.varType_ = varType;
-            Variables.setStyle(this, this.varType_);
+        setscopeType: function (scopeType) {
+            this.scopeType = scopeType;
+            Variables.setStyle(this, this.scopeType);
         },
         dispose: function (healStack, animate) {
             if (this.variable_ && this.workspace.getVariableById(this.variable_.getId())) {
                 this.workspace.deleteVariableById(this.variable_.getId());
-                LOG.warn("delete variable", this);
+                LOG.warn("delete loop variable", this);
             }
             Blockly.BlockSvg.prototype.dispose.call(this, !!healStack, animate);
         }
@@ -651,7 +651,7 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
                 var contextMenuMsg;
                 var id = this.getFieldValue('VAR');
                 var variableModel = this.workspace.getVariableById(id);
-                var varType = variableModel.type;
+                var scopeType = variableModel.type;
                 if (this.type == 'nepo_variables_get') {
                     opposite_type = 'nepo_variables_set';
                     contextMenuMsg = Blockly.Msg['VARIABLES_GET_CREATE_SET'];
@@ -664,8 +664,8 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
                 var name = this.getField('VAR').getText();
                 option["text"] = contextMenuMsg.replace('%1', name);
                 var xmlField = Blockly.utils.xml.createElement('field');
-                xmlField.setAttribute('name', 'VAR');
-                xmlField.setAttribute('variabletype', varType);
+                xmlField.setAttribute("name", 'VAR');
+                xmlField.setAttribute('variabletype', scopeType);
                 xmlField.appendChild(Blockly.utils.xml.createTextNode(name));
                 var xmlBlock = Blockly.utils.xml.createElement('block');
                 xmlBlock.setAttribute('type', opposite_type);
@@ -679,12 +679,12 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
         mutationToDom: function () {
             var container = document.createElement('mutation');
             if (this.dataType_) {
-                container.setAttribute('dataType', this.dataType_);
+                container.setAttribute("datatype", this.dataType_);
                 return container;
             }
         },
         domToMutation: function (xmlElement) {
-            var dataType = xmlElement.getAttribute('dataType');
+            var dataType = xmlElement.getAttribute("datatype");
             if (dataType) {
                 this.updateDataType(dataType);
             }
@@ -704,9 +704,6 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
         }
     };
     exports.INTERNAL_VARIABLE_DECLARATION_MIXIN = {
-        getVariable: function () {
-            return this.variable_;
-        },
         getScopeId: function () {
             return this.scopeId_;
         },
@@ -724,7 +721,7 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
         },
         domToMutation: function (xmlElement) {
             var varDecl = xmlElement.getAttribute('var_decl');
-            if (varDecl && this.workspace.getVariableById(varDecl)) {
+            if (varDecl === this.id) {
                 this.variable_ = this.workspace.getVariableById(varDecl);
             }
             else {
@@ -742,11 +739,149 @@ define(["require", "exports", "blockly", "nepo.mutator.minus", "nepo.variables",
             }
         },
         dispose: function (healStack, animate) {
-            if (healStack && this.variable_ && this.workspace.getVariableById(this.variable_.getId())) {
+            if (this.variable_ && this.workspace.getVariableById(this.variable_.getId())) {
                 this.workspace.deleteVariableById(this.variable_.getId());
                 LOG.warn("delete loop variable", this);
             }
             Blockly.BlockSvg.prototype.dispose.call(this, !!healStack, animate);
+        }
+    };
+    exports.PROCEDURE_MIXIN = {
+        /**
+         * Return the signature of this procedure definition.
+         * @return {!Array} Tuple containing three elements:
+         *     - the name of the defined procedure,
+         *     - a list of all its arguments,
+         *     - that it DOES NOT have a return value.
+         * @this {Blockly.Block}
+         */
+        getProcedureDef: function () {
+            var argList = [];
+            var declBlock = this.getInput("DECL") && this.getInput("DECL").connection && this.getInput("DECL").connection.targetBlock();
+            while (declBlock) {
+                argList.push(declBlock.variable_.getId());
+                declBlock = declBlock.getNextBlock();
+            }
+            return [this.getFieldValue("NAME"), argList, this.type.indexOf("no") >= 0 ? false : true];
+        },
+        updateDataType: function (dataType) {
+            this.dataType_ = dataType;
+            if (this.outputConnection) {
+                this.outputConnection.setCheck(dataType);
+            }
+            else {
+                for (var i = 0, input; (input = this.inputList[i]); i++) {
+                    if (input.connection) {
+                        input.connection.setCheck(dataType);
+                    }
+                }
+            }
+        },
+        dispose: function (healStack, animate) {
+            if (healStack) {
+                var callerList = Blockly.Procedures.getCallers(this.getFieldValue("NAME"), this.workspace);
+                callerList.forEach(function (caller) { return caller.dispose(true); });
+            }
+            Blockly.BlockSvg.prototype.dispose.call(this, !!healStack, animate);
+        }
+    };
+    exports.PROCEDURE_CALL_MIXIN = {
+        mutationToDom: function () {
+            var container = Blockly.utils.xml.createElement('mutation');
+            container.setAttribute("name", this.getFieldValue("NAME"));
+            var i = 1;
+            var input;
+            while (input = this.getInput("ARG" + i)) {
+                var arg = Blockly.utils.xml.createElement('arg');
+                arg.setAttribute("name", input.fieldRow[0].value_);
+                arg.setAttribute("datatype", input.connection.getCheck()[0]);
+                //arg.setAttribute('varId', args[j].getId());
+                container.appendChild(arg);
+                i++;
+                input = this.getInput("ARG" + i);
+            }
+            return container;
+        },
+        /**
+         * Parse XML to restore the argument inputs.
+         * @param {!Element} xmlElement XML storage element.
+         * @this {Blockly.Block}
+         */
+        domToMutation: function (xmlElement) {
+            var name = xmlElement.getAttribute("name");
+            this.renameProcedure(this.getProcedureCall(), name);
+            for (var x = 0, childNode; childNode = xmlElement.childNodes[x]; x++) {
+                if (childNode.nodeName.toLowerCase() == 'arg') {
+                    this.addParam(childNode.getAttribute("name"), childNode.getAttribute("datatype"));
+                }
+            }
+        },
+        /**
+        * Returns the name of the procedure this block calls.
+        * @return {string} Procedure name.
+        * @this {Blockly.Block}
+        */
+        getProcedureCall: function () {
+            // The NAME field is guaranteed to exist, null will never be returned.
+            return /** @type {string} */ (this.getFieldValue("NAME"));
+        },
+        /**
+      * Notification that a procedure is renaming.
+      * If the name matches this block's procedure, rename it.
+      * @param {string} oldName Previous name of procedure.
+      * @param {string} newName Renamed procedure.
+      * @this {Blockly.Block}
+      */
+        renameProcedure: function (oldName, newName) {
+            if (Blockly.Names.equals(oldName, this.getProcedureCall())) {
+                this.setFieldValue(newName, "NAME");
+                var baseMsg = this.outputConnection ?
+                    Blockly.Msg['PROCEDURES_CALLRETURN_TOOLTIP'] :
+                    Blockly.Msg['PROCEDURES_CALLNORETURN_TOOLTIP'];
+                this.setTooltip(baseMsg.replace('%1', newName));
+            }
+        },
+        /**
+        * Add a parameter from this procedure definition block.
+        * @private
+        * @this {Blockly.Block}
+         */
+        addParam: function (name, opt_type) {
+            this.args_++;
+            var thisType = opt_type || "Number";
+            var input = this.appendValueInput('ARG' + this.args_).
+                setAlign(Blockly.ALIGN_RIGHT).
+                appendField(name).
+                setCheck(thisType);
+            input.init();
+        },
+        /**
+        * Add a parameter from this procedure definition block.
+        * @private
+        * @this {Blockly.Block}
+         */
+        removeParam: function (name, type) {
+            var input;
+            var i = 1;
+            var found = false;
+            while (input = this.getInput("ARG" + i)) {
+                if (input.fieldRow[0].value_ === name && input.connection.getCheck()[0] === type) {
+                    this.removeInput("ARG" + i, true);
+                    found = true;
+                    break;
+                }
+                i++;
+                input = this.getInput("ARG" + i);
+            }
+            if (found) {
+                i++;
+                input = this.getInput("ARG" + i);
+                while (input) {
+                    input.name = "ARG" + (i - 1);
+                    i++;
+                    input = this.getInput("ARG" + i);
+                }
+            }
         }
     };
 });

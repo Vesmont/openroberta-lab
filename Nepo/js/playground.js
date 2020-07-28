@@ -1,8 +1,7 @@
-define(["require", "exports", "blockly", "ajv", "nepo.schema.robot", "nepo.theme.classic", "nepo.schema.common", "nepo.blockly", "nepo.variables"], function (require, exports, Blockly, Ajv, schemaRobot, nepoThemeClassic, schemaCommon, nepo_blockly_1, Variables) {
+define(["require", "exports", "blockly", "ajv", "nepo.schema.robot", "nepo.theme.classic", "nepo.schema.common", "nepo.blockly", "nepo.variables", "nepo.procedures"], function (require, exports, Blockly, Ajv, schemaRobot, nepoThemeClassic, schemaCommon, nepo_blockly_1, Variables, Procedures) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.init = void 0;
-    //import "nepo.procedures";
     var $blocklyArea = $("#blocklyArea");
     var $bricklyArea = $("#bricklyArea");
     var $blocklyDiv = $("#blocklyDiv");
@@ -12,7 +11,7 @@ define(["require", "exports", "blockly", "ajv", "nepo.schema.robot", "nepo.theme
     var ajv = new Ajv();
     var commonJSONBlockDescription;
     var robotJSONBlockDescription;
-    //(window as any).LOG = true;
+    window.LOG = true;
     function init() {
         var Export = document.getElementById("export");
         var Import = document.getElementById("import");
@@ -48,12 +47,31 @@ define(["require", "exports", "blockly", "ajv", "nepo.schema.robot", "nepo.theme
         nepo_blockly_1.Nepo.defineCommonBlocks(commonBlocks);
         nepo_blockly_1.Nepo.inject("blocklyDiv");
         nepoThemeClassic.setTheme();
-        blocklyWorkspace = Blockly.inject('blocklyDiv', { "toolbox": $toolbox });
+        blocklyWorkspace = Blockly.inject('blocklyDiv', {
+            "toolbox": $toolbox, zoom: {
+                controls: true,
+                wheel: true,
+                startScale: 1.0,
+                maxScale: 3,
+                minScale: 0.3,
+                scaleSpeed: 1.2
+            },
+            trashcan: true
+        });
         bricklyWorkspace = Blockly.inject('bricklyDiv', { "toolbox": $toolbox });
         blocklyWorkspace.setTheme(Blockly["Themes"]["NepoClassic"]);
-        blocklyWorkspace.registerToolboxCategoryCallback('NEPO_VARIABLE', Variables.nepoVariablesFlyoutCallback);
-        //blocklyWorkspace.addChangeListener(function(event) {console.log(event) });
+        blocklyWorkspace.registerToolboxCategoryCallback('NEPO_VARIABLE', Variables.flyoutCallback);
+        blocklyWorkspace.registerToolboxCategoryCallback('NEPO_PROCEDURE', Procedures.flyoutCallback);
+        // add default start block
+        var xml = Blockly.Xml.textToDom("<xml xmlns='https://developers.google.com/blockly/xml'>" +
+            "<block type='controls_start' id='mm;%5J+ugrVfS:/UE}.G' x='200' y='56'>" +
+            "<mutation xmlns='http://www.w3.org/1999/xhtml' declare='false'></mutation>" +
+            "</block>" +
+            "</xml>");
+        Blockly.Xml.domToWorkspace(xml, blocklyWorkspace);
+        blocklyWorkspace.addChangeListener(function (event) { console.log(event); });
         resizeAll();
+        Blockly.svgResize(blocklyWorkspace);
     }
     function resizeAll() {
         function resizeDiv($div, $area) {

@@ -3,34 +3,36 @@ import { Log } from "utils/nepo.logger";
 
 const LOG = new Log();
 
-export function nepoVariablesFlyoutCallback(workspace: Blockly.Workspace): Array<string> {
-	let variableModelList: Array<Blockly.VariableModel> = getUniqueVariables(workspace);
+export function flyoutCallback(workspace: Blockly.Workspace): Array<string> {
+	// add the new scope block always on top:
+	// <block type="variable_scope" > </block>
 	var xmlList = [];
+	let scope = (Blockly.utils as any).xml.createElement("block");
+	scope.setAttribute("type", "variable_scope");
+	scope.setAttribute("gap", 16);
+	xmlList.push(scope);
+	let variableModelList: Array<Blockly.VariableModel> = getUniqueVariables(workspace);
 	if (variableModelList.length > 0) {
-		if (Blockly.Blocks['nepo_variables_set']) {
-			variableModelList.forEach(
-				variable => {
-					var block = (Blockly.utils as any).xml.createElement('block');
-					block.setAttribute('type', 'nepo_variables_set');
-					block.setAttribute('gap', 8);
-					block.setAttribute('id', variable.getId());
+		variableModelList.forEach(
+			variable => {
+				if (Blockly.Blocks["nepo_variables_set"]) {
+
+					var block = (Blockly.utils as any).xml.createElement("block");
+					block.setAttribute("type", "nepo_variables_set");
+					block.setAttribute("gap", 8);
+					block.setAttribute("id", variable.getId());
 					block.appendChild(Blockly.Variables.generateVariableFieldDom(variable));
 					xmlList.push(block);
 				}
-			)
-		}
-		if (Blockly.Blocks['nepo_variables_get']) {
-			variableModelList.forEach(
-				variable => {
-					var block = (Blockly.utils as any).xml.createElement('block');
-					block.setAttribute('type', 'nepo_variables_get');
-					block.setAttribute('gap', 8);
+				if (Blockly.Blocks["nepo_variables_get"]) {
+					var block = (Blockly.utils as any).xml.createElement("block");
+					block.setAttribute("type", "nepo_variables_get");
+					block.setAttribute("gap", 16);
 					block.appendChild(Blockly.Variables.generateVariableFieldDom(variable));
 					xmlList.push(block);
 				}
-			)
-		};
-	}
+			})
+	};
 	return xmlList;
 }
 
@@ -41,7 +43,7 @@ export function nepoVariablesFlyoutCallback(workspace: Blockly.Workspace): Array
  */
 export function checkScope(scopeBlock: Blockly.Block) {
 	let scopeVars = getVarScopeList(scopeBlock);
-	
+
 	let succDeclBlocks: Array<Blockly.Block> = getSuccDeclList(scopeBlock);
 	succDeclBlocks.forEach(block => {
 		if (!isUniqueName(block, scopeVars)) {
@@ -79,19 +81,18 @@ export function setUniqueName(thisBlock: Blockly.Block, scopeList: Array<Blockly
 
 export function getUniqueName(thisBlock: Blockly.Block, scopeList: Array<Blockly.VariableModel>, opt_name?: string) {
 	let name = opt_name || (thisBlock.getField("VAR") && thisBlock.getField("VAR").getValue());
-	let names: Array<string> = scopeList.map(variable => {
+	let names: Array<string> = scopeList.filter(variable => {
 		if (variable.getId() !== thisBlock.id) {
-			return variable.name;
+			return variable;
 		}
-	});
-
+	}).map(variableModel => variableModel.name);
 	let newName = name;
 	while (newName && names.indexOf(newName) >= 0) {
 		var r = newName.match(/^(.*?)(\d+)$/);
 		if (!r) {
 			r = newName.match(/^[a-zA-Z]{1}$/);
 			if (!r) {
-				newName += '2';
+				newName += "2";
 			} else {
 				// special case variable names in loops, e.g. i,j ...
 				newName = Blockly.Variables.generateUniqueName(thisBlock.workspace);
@@ -145,7 +146,7 @@ export function getSurrScopeList(scopeBlock: Blockly.Block): Array<Blockly.Varia
 			}
 			while (declBlock) {
 				if ((declBlock as any).varDecl) {
-					scopeVars.push((declBlock as any).getVariable());
+					scopeVars.push((declBlock as any).variable_);
 
 				}
 				declBlock = (declBlock as any).getNextBlock();
@@ -192,7 +193,7 @@ function getGlobalVars(workspace: Blockly.Workspace): Array<Blockly.VariableMode
 			startBlocks[0].getFirstStatementConnection().targetBlock();
 		while (declBlock) {
 			if ((declBlock as any).varDecl) {
-				globalVars.push((declBlock as any).getVariable());
+				globalVars.push((declBlock as any).variable_);
 			}
 			declBlock = declBlock && (declBlock as any).getNextBlock();
 		}
@@ -201,8 +202,8 @@ function getGlobalVars(workspace: Blockly.Workspace): Array<Blockly.VariableMode
 	return globalVars;
 }
 
-export function setStyle(thisBlock: Blockly.Block, varType: string) {
-	switch (varType) {
+export function setStyle(thisBlock: Blockly.Block, scopeType: string) {
+	switch (scopeType) {
 		case "GLOBAL":
 			thisBlock.setStyle("start_blocks");
 			break;
@@ -213,7 +214,7 @@ export function setStyle(thisBlock: Blockly.Block, varType: string) {
 			thisBlock.setStyle("control_blocks");
 			break;
 		case "PROC":
-			thisBlock.setStyle("control_blocks");
+			thisBlock.setStyle("procedure_blocks");
 			break;
 		default:
 			thisBlock.setStyle("variable_blocks");

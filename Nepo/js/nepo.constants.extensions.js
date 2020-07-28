@@ -1,7 +1,7 @@
 define(["require", "exports", "blockly", "nepo.constants.mixins", "nepo.variables", "utils/nepo.logger", "nepo.blockly"], function (require, exports, Blockly, NepoMix, Variables, nepo_logger_1, nepo_blockly_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.INTERNAL_VARIABLE_DECLARATION_EXTENSION = exports.VARIABLE_DECLARATION_EXTENSION = exports.VARIABLE_EXTENSION = exports.TEXT_COMMENTS_VALIDATOR = exports.TEXT_COMMENTS_EXTENSION = exports.TEXT_JOIN_EXTENSION = exports.TEXT_QUOTES_EXTENSION = exports.IS_DIVISIBLE_MUTATOR_EXTENSION = exports.CONTROLS_IF_TOOLTIP_EXTENSION = exports.VARIABLE_SCOPE_EXTENSION = exports.COMMON_TYPE_EXTENSION = exports.COMMON_PARENT_TOOLTIP_EXTENSION = exports.COMMON_TOOLTIP_EXTENSION = void 0;
+    exports.DATATYPE_DROPDOWN_VALIDATOR_EXTENSION = exports.PROCEDURE_CALL_EXTENSION = exports.PROCEDURE_EXTENSION = exports.INTERNAL_VARIABLE_DECLARATION_EXTENSION = exports.VARIABLE_DECLARATION_EXTENSION = exports.VARIABLE_EXTENSION = exports.TEXT_COMMENTS_VALIDATOR = exports.TEXT_COMMENTS_EXTENSION = exports.TEXT_JOIN_EXTENSION = exports.TEXT_QUOTES_EXTENSION = exports.IS_DIVISIBLE_MUTATOR_EXTENSION = exports.CONTROLS_IF_TOOLTIP_EXTENSION = exports.VARIABLE_SCOPE_EXTENSION = exports.COMMON_TYPE_EXTENSION = exports.COMMON_PARENT_TOOLTIP_EXTENSION = exports.COMMON_TOOLTIP_EXTENSION = void 0;
     var LOG = new nepo_logger_1.Log();
     LOG.info("nothing to log?");
     exports.COMMON_TOOLTIP_EXTENSION = function () {
@@ -54,6 +54,24 @@ define(["require", "exports", "blockly", "nepo.constants.mixins", "nepo.variable
     };
     exports.VARIABLE_SCOPE_EXTENSION = function () {
         this.varScope = true;
+        switch (this.type) {
+            case "controls_start":
+                this.scopeType = "GLOBAL";
+                break;
+            case "variable_scope":
+                this.scopeType = "LOCAL";
+                break;
+            case "procedures_defnoreturn":
+            case "procedures_defreturn":
+                this.scopeType = "PROC";
+                break;
+            case "controls_for":
+            case "controls_forEach":
+                this.scopeType = "LOOP";
+                break;
+            default:
+                this.scopeType = "LOCAL";
+        }
     };
     exports.CONTROLS_IF_TOOLTIP_EXTENSION = function () {
         this.setTooltip(function () {
@@ -105,7 +123,7 @@ define(["require", "exports", "blockly", "nepo.constants.mixins", "nepo.variable
         this.setMovable(false);
         var name;
         this.scopeId_ = this.id;
-        this.varType_ = "LOCAL";
+        this.scopeType = "LOCAL";
         name = Variables.getUniqueName(this, [], Blockly.Msg["VARIABLES_LOCAL_DEFAULT_NAME"]);
         this.variable_ = this.workspace.createVariable(name, "Number", this.id);
         this.varDecl = true;
@@ -114,25 +132,17 @@ define(["require", "exports", "blockly", "nepo.constants.mixins", "nepo.variable
         this.next_ = false;
         this.getField("VAR").setValue(name);
         this.getField("VAR").setValidator(VARIABLE_DECLARATION_VALIDATOR);
-        Blockly.FieldDropdown.validateOptions_(nepo_blockly_1.Nepo.dropdownTypes);
-        this.getField("DATATYPE").menuGenerator_ = nepo_blockly_1.Nepo.dropdownTypes;
-        this.getField("DATATYPE").setValidator(function (option) {
-            if (option && option !== this.sourceBlock_.getFieldValue('DATATYPE')) {
-                this.sourceBlock_.updateDataType(option);
-            }
-        });
-        this.getField("DATATYPE").doValueUpdate_(nepo_blockly_1.Nepo.dropdownTypes[0][1]);
     };
     exports.INTERNAL_VARIABLE_DECLARATION_EXTENSION = function () {
         this.mixin(NepoMix.INTERNAL_VARIABLE_DECLARATION_MIXIN, true);
         this.varScope = true;
         this.scopeId_ = this.id;
-        this.varType_ = "LOOP";
+        this.dataType_ = "Number";
+        this.scopeType = "LOOP";
         this.varDecl = true;
         this.internalVarDecl = true;
         this.scopeId_ = this.id;
-        this.varType_ = "LOCAL";
-        this.getField("VAR").setEditorValue_(Blockly.Msg["VARIABLES_LOOP_DEFAULT_NAME"]);
+        this.setFieldValue(Blockly.Msg["VARIABLES_LOOP_DEFAULT_NAME"], "VAR");
         this.getField("VAR").setValidator(VARIABLE_DECLARATION_VALIDATOR);
     };
     var VARIABLE_DECLARATION_VALIDATOR = function (newName) {
@@ -143,7 +153,7 @@ define(["require", "exports", "blockly", "nepo.constants.mixins", "nepo.variable
         var scopeVars = [];
         var scopeBlock = thisBlock.workspace.getBlockById(thisBlock.getScopeId());
         if (scopeBlock) {
-            if (scopeBlock.type.indexOf("start") >= 0) {
+            if (scopeBlock.scopeType === "GLOBAL") {
                 scopeVars = Variables.getUniqueVariables(scopeBlock.workspace);
             }
             else {
@@ -159,6 +169,29 @@ define(["require", "exports", "blockly", "nepo.constants.mixins", "nepo.variable
             thisBlock.workspace.createVariable(name);
         }
         return name;
+    };
+    exports.PROCEDURE_EXTENSION = function () {
+        this.mixin(NepoMix.PROCEDURE_MIXIN, true);
+        this.varScope = true;
+        this.scopeId_ = this.id;
+        this.varDecl = true;
+        this.setNextStatement(false);
+        this.setPreviousStatement(false);
+        this.getField("NAME").setValidator(Blockly.Procedures.rename);
+    };
+    exports.PROCEDURE_CALL_EXTENSION = function () {
+        this.args_ = 0;
+        this.mixin(NepoMix.PROCEDURE_CALL_MIXIN, true);
+    };
+    exports.DATATYPE_DROPDOWN_VALIDATOR_EXTENSION = function () {
+        Blockly.FieldDropdown.validateOptions_(nepo_blockly_1.Nepo.dropdownTypes);
+        this.getField("DATATYPE").menuGenerator_ = nepo_blockly_1.Nepo.dropdownTypes;
+        this.getField("DATATYPE").setValidator(function (option) {
+            if (option && option !== this.sourceBlock_.getFieldValue('DATATYPE')) {
+                this.sourceBlock_.updateDataType(option);
+            }
+        });
+        this.getField("DATATYPE").doValueUpdate_(nepo_blockly_1.Nepo.dropdownTypes[0][1]);
     };
 });
 //# sourceMappingURL=nepo.constants.extensions.js.map

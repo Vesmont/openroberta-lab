@@ -1,36 +1,40 @@
 define(["require", "exports", "blockly", "utils/nepo.logger"], function (require, exports, Blockly, nepo_logger_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.setStyle = exports.getSurrScopeList = exports.getVarScopeList = exports.getVariablesByName = exports.isUniqueName = exports.getUniqueName = exports.setUniqueName = exports.getUniqueVariables = exports.checkScope = exports.nepoVariablesFlyoutCallback = void 0;
+    exports.setStyle = exports.getSurrScopeList = exports.getVarScopeList = exports.getVariablesByName = exports.isUniqueName = exports.getUniqueName = exports.setUniqueName = exports.getUniqueVariables = exports.checkScope = exports.flyoutCallback = void 0;
     var LOG = new nepo_logger_1.Log();
-    function nepoVariablesFlyoutCallback(workspace) {
-        var variableModelList = getUniqueVariables(workspace);
+    function flyoutCallback(workspace) {
+        // add the new scope block always on top:
+        // <block type="variable_scope" > </block>
         var xmlList = [];
+        var scope = Blockly.utils.xml.createElement("block");
+        scope.setAttribute("type", "variable_scope");
+        scope.setAttribute("gap", 16);
+        xmlList.push(scope);
+        var variableModelList = getUniqueVariables(workspace);
         if (variableModelList.length > 0) {
-            if (Blockly.Blocks['nepo_variables_set']) {
-                variableModelList.forEach(function (variable) {
-                    var block = Blockly.utils.xml.createElement('block');
-                    block.setAttribute('type', 'nepo_variables_set');
-                    block.setAttribute('gap', 8);
-                    block.setAttribute('id', variable.getId());
+            variableModelList.forEach(function (variable) {
+                if (Blockly.Blocks["nepo_variables_set"]) {
+                    var block = Blockly.utils.xml.createElement("block");
+                    block.setAttribute("type", "nepo_variables_set");
+                    block.setAttribute("gap", 8);
+                    block.setAttribute("id", variable.getId());
                     block.appendChild(Blockly.Variables.generateVariableFieldDom(variable));
                     xmlList.push(block);
-                });
-            }
-            if (Blockly.Blocks['nepo_variables_get']) {
-                variableModelList.forEach(function (variable) {
-                    var block = Blockly.utils.xml.createElement('block');
-                    block.setAttribute('type', 'nepo_variables_get');
-                    block.setAttribute('gap', 8);
+                }
+                if (Blockly.Blocks["nepo_variables_get"]) {
+                    var block = Blockly.utils.xml.createElement("block");
+                    block.setAttribute("type", "nepo_variables_get");
+                    block.setAttribute("gap", 16);
                     block.appendChild(Blockly.Variables.generateVariableFieldDom(variable));
                     xmlList.push(block);
-                });
-            }
-            ;
+                }
+            });
         }
+        ;
         return xmlList;
     }
-    exports.nepoVariablesFlyoutCallback = nepoVariablesFlyoutCallback;
+    exports.flyoutCallback = flyoutCallback;
     /**
      * Should be called whenever a scope block has been moved to check if the variable names are still valid. If
      * not, the variables (and fields) are renamed.
@@ -75,18 +79,18 @@ define(["require", "exports", "blockly", "utils/nepo.logger"], function (require
     exports.setUniqueName = setUniqueName;
     function getUniqueName(thisBlock, scopeList, opt_name) {
         var name = opt_name || (thisBlock.getField("VAR") && thisBlock.getField("VAR").getValue());
-        var names = scopeList.map(function (variable) {
+        var names = scopeList.filter(function (variable) {
             if (variable.getId() !== thisBlock.id) {
-                return variable.name;
+                return variable;
             }
-        });
+        }).map(function (variableModel) { return variableModel.name; });
         var newName = name;
         while (newName && names.indexOf(newName) >= 0) {
             var r = newName.match(/^(.*?)(\d+)$/);
             if (!r) {
                 r = newName.match(/^[a-zA-Z]{1}$/);
                 if (!r) {
-                    newName += '2';
+                    newName += "2";
                 }
                 else {
                     // special case variable names in loops, e.g. i,j ...
@@ -144,7 +148,7 @@ define(["require", "exports", "blockly", "utils/nepo.logger"], function (require
                 }
                 while (declBlock) {
                     if (declBlock.varDecl) {
-                        scopeVars.push(declBlock.getVariable());
+                        scopeVars.push(declBlock.variable_);
                     }
                     declBlock = declBlock.getNextBlock();
                 }
@@ -189,7 +193,7 @@ define(["require", "exports", "blockly", "utils/nepo.logger"], function (require
                 startBlocks[0].getFirstStatementConnection().targetBlock();
             while (declBlock) {
                 if (declBlock.varDecl) {
-                    globalVars.push(declBlock.getVariable());
+                    globalVars.push(declBlock.variable_);
                 }
                 declBlock = declBlock && declBlock.getNextBlock();
             }
@@ -197,8 +201,8 @@ define(["require", "exports", "blockly", "utils/nepo.logger"], function (require
         LOG.info("global variables", globalVars);
         return globalVars;
     }
-    function setStyle(thisBlock, varType) {
-        switch (varType) {
+    function setStyle(thisBlock, scopeType) {
+        switch (scopeType) {
             case "GLOBAL":
                 thisBlock.setStyle("start_blocks");
                 break;
@@ -209,7 +213,7 @@ define(["require", "exports", "blockly", "utils/nepo.logger"], function (require
                 thisBlock.setStyle("control_blocks");
                 break;
             case "PROC":
-                thisBlock.setStyle("control_blocks");
+                thisBlock.setStyle("procedure_blocks");
                 break;
             default:
                 thisBlock.setStyle("variable_blocks");

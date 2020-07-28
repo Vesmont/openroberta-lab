@@ -24,12 +24,10 @@ define(["require", "exports", "blockly", "utils/nepo.logger", "nepo.msg", "nepo.
                     }
                     switch (keyTmp) {
                         case "type":
-                        case "previousStatement":
                         case "output":
                         case "mutator":
                         case "inputsInline":
                         case "style":
-                        case "nextStatement":
                         case "extensions":
                             a[key] = block[key];
                             break;
@@ -42,14 +40,12 @@ define(["require", "exports", "blockly", "utils/nepo.logger", "nepo.msg", "nepo.
                             a[key] = block[key];
                             break;
                         default:
-                            console.log("error " + keyTmp);
+                            console.error("error " + keyTmp);
                     }
                 }
                 // define defaults:
                 if (!a["output"] && !a["previousStatement"]) {
                     a["previousStatement"] = true;
-                }
-                if (!a["output"] && a["nextStatement"] == undefined) {
                     a["nextStatement"] = true;
                 }
                 // extensions

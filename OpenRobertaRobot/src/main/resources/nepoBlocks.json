@@ -127,7 +127,8 @@
 			"inputsInline": true,
 			"style": "control_blocks",
 			"extensions": [
-				"internal_variable_declaration_extension"
+				"internal_variable_declaration_extension",
+				"variable_scope_extension"
 			]
 		},
 		{
@@ -153,7 +154,8 @@
 			],
 			"style": "control_blocks",
 			"extensions": [
-				"internal_variable_declaration_extension"
+				"internal_variable_declaration_extension",
+				"variable_scope_extension"
 			]
 		},
 		{
@@ -870,7 +872,8 @@
 			"style": "variable_blocks",
 			"mutator": "variable_minus_mutator",
 			"extensions": [
-				"variable_declaration_extension"
+				"variable_declaration_extension",
+				"datatype_dropdown_validator_extension"
 			]
 		},
 		{
@@ -924,6 +927,101 @@
 			"style": "variable_blocks",
 			"extensions": [
 				"variable_extension"
+			]
+		},
+		{
+			"type": "procedures_defnoreturn",
+			"message0": "%1",
+			"args0": [
+				{
+					"type": "field_input",
+					"name": "NAME"
+				}
+			],
+			"message1": "%1",
+			"args1": [
+				{
+					"type": "input_statement",
+					"name": "STACK"
+				}
+			],
+			"mutator": "variable_plus_mutator",
+			"style": "procedure_blocks",
+			"extensions": [
+				"procedure_extension",
+				"variable_scope_extension"
+			]
+		},
+		{
+			"type": "procedures_callnoreturn",
+			"message0": "%1",
+			"args0": [
+				{
+					"type": "field_label",
+					"name": "NAME"
+				}
+			],
+			"style": "procedure_blocks",
+			"extensions": [
+				"procedure_call_extension"
+			]
+		},
+		{
+			"type": "procedures_defreturn",
+			"message0": "%1",
+			"args0": [
+				{
+					"type": "field_input",
+					"name": "NAME"
+				}
+			],
+			"message1": "%1",
+			"args1": [
+				{
+					"type": "input_statement",
+					"name": "STACK"
+				}
+			],
+			"message2": "%{BKY_PROCEDURES_DEFRETURN_RETURN} %1 %2",
+			"args2": [
+				{
+					"type": "field_dropdown",
+					"align": "RIGHT",
+					"name": "DATATYPE",
+					"options": [
+						[
+							"Number",
+							"NUMBER"
+						]
+					]
+				},
+				{
+					"type": "input_value",
+					"name": "RETURN",
+					"align": "RIGHT"
+				}
+			],
+			"mutator": "variable_plus_mutator",
+			"style": "procedure_blocks",
+			"extensions": [
+				"procedure_extension",
+				"variable_scope_extension",
+				"datatype_dropdown_validator_extension"
+			]
+		},
+		{
+			"type": "procedures_callreturn",
+			"message0": "%1",
+			"args0": [
+				{
+					"type": "field_label",
+					"name": "NAME"
+				}
+			],
+			"output": "Number",
+			"style": "procedure_blocks",
+			"extensions": [
+				"procedure_call_extension"
 			]
 		}
 	]
