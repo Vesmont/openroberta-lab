@@ -34,7 +34,7 @@ export function init() {
 			commonJSONBlockDescription = result;
 		}
 	}).always(function() {
-		$.getJSON('../RobotRaspberryPi/src/main/resources/nepoBlocks.json', function(result) {
+		$.getJSON('../RobotMbed/src/main/resources/calliope/nepoBlocks.json', function(result) {
 			if (validateSchema(result, schemaRobot.schema)) {
 				robotJSONBlockDescription = result;
 			}
@@ -50,7 +50,7 @@ function initBlockly() {
 		return;
 	}
 	var $toolbox = $('#toolbox-categories')[0];
-	Nepo.defineDatatypes(robotJSONBlockDescription);
+	Nepo.defineBlocks(robotJSONBlockDescription);
 
 	let commonBlocks: Object[] = Nepo.initCommonBlocks(commonJSONBlockDescription['blocks']);
 	Nepo.defineCommonBlocks(commonBlocks);

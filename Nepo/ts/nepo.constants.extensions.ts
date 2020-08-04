@@ -1,11 +1,10 @@
 import * as Blockly from "blockly";
 import * as NepoMix from "nepo.constants.mixins";
-import * as Variables from "nepo.variables";
 import { Log } from "utils/nepo.logger";
 import { Nepo } from "nepo.blockly";
 
 const LOG = new Log();
-LOG.info("nothing to log?");
+LOG;
 
 export const COMMON_TOOLTIP_EXTENSION = function() {
 	var thisBlock = this;
@@ -53,32 +52,6 @@ export const COMMON_PARENT_TOOLTIP_EXTENSION = function() {
 	});
 }
 
-export const COMMON_TYPE_EXTENSION = function() {
-
-}
-
-export const VARIABLE_SCOPE_EXTENSION = function() {
-	this.varScope = true;
-	switch (this.type) {
-		case "controls_start":
-			this.scopeType = "GLOBAL";
-			break;
-		case "variable_scope":
-			this.scopeType = "LOCAL"
-			break;
-		case "procedures_defnoreturn":
-		case "procedures_defreturn":
-			this.scopeType = "PROC"
-			break;
-		case "controls_for":
-		case "controls_forEach":
-			this.scopeType = "LOOP"
-			break;
-		default:
-			this.scopeType = "LOCAL"
-	}
-}
-
 export const CONTROLS_IF_TOOLTIP_EXTENSION = function() {
 	this.setTooltip(function() {
 		if (!this.elseifCount_ && !this.elseCount_) {
@@ -92,108 +65,6 @@ export const CONTROLS_IF_TOOLTIP_EXTENSION = function() {
 		}
 		return '';
 	}.bind(this));
-};
-
-export const IS_DIVISIBLE_MUTATOR_EXTENSION = function() {
-	this.getField('PROPERTY').setValidator(function(option: string) {
-		var divisorInput = (option == 'DIVISIBLE_BY');
-		this.getSourceBlock().updateShape_(divisorInput);
-	});
-};
-
-export const TEXT_QUOTES_EXTENSION = function() {
-	this.mixin(NepoMix.QUOTE_IMAGE_MIXIN);
-	this.quoteField_('TEXT');
-};
-
-export const TEXT_JOIN_EXTENSION = function() {
-	this.mixin(NepoMix.QUOTE_IMAGE_MIXIN);
-};
-
-export const TEXT_COMMENTS_EXTENSION = function() {
-	this.mixin(NepoMix.COMMENTS_IMAGE_MIXIN);
-	this.commentField_('TEXT');
-};
-
-export const TEXT_COMMENTS_VALIDATOR = function() {
-	this.getField('TEXT').setValidator(function(content: string) {
-		if (content && content.match(/[<>\$]/)) {
-			return null;
-		}
-		return content;
-	});
-};
-
-export const VARIABLE_EXTENSION = function() {
-	this.mixin(NepoMix.VARIABLE_MIXIN);
-}
-
-export const VARIABLE_DECLARATION_EXTENSION = function() {
-	this.previousConnection.setCheck("declaration_only");
-	this.setMovable(false);
-	let name: string;
-	this.scopeId_ = this.id;
-	this.scopeType = "LOCAL";
-	name = Variables.getUniqueName(this, [], Blockly.Msg["VARIABLES_LOCAL_DEFAULT_NAME"]);
-	this.variable_ = this.workspace.createVariable(name, "Number", this.id);
-	this.varDecl = true;
-	this.dataType_ = "Number";
-	this.setNextStatement(false, "declaration_only");
-	this.next_ = false;
-	this.getField("VAR").setValue(name);
-	this.getField("VAR").setValidator(VARIABLE_DECLARATION_VALIDATOR);
-}
-
-export const INTERNAL_VARIABLE_DECLARATION_EXTENSION = function() {
-	this.mixin(NepoMix.INTERNAL_VARIABLE_DECLARATION_MIXIN, true);
-	this.varScope = true;
-	this.scopeId_ = this.id;
-	this.dataType_ = "Number";
-	this.scopeType = "LOOP";
-	this.varDecl = true;
-	this.internalVarDecl = true;
-	this.scopeId_ = this.id;
-	this.setFieldValue(Blockly.Msg["VARIABLES_LOOP_DEFAULT_NAME"], "VAR");
-	this.getField("VAR").setValidator(VARIABLE_DECLARATION_VALIDATOR);
-}
-
-const VARIABLE_DECLARATION_VALIDATOR = function(newName: string) {
-	if (newName === this.value_) {
-		return newName;
-	}
-	let thisBlock = this.getSourceBlock();
-	let scopeVars = [];
-	let scopeBlock = thisBlock.workspace.getBlockById((thisBlock as any).getScopeId());
-	if (scopeBlock) {
-		if (scopeBlock.scopeType === "GLOBAL") {
-			scopeVars = Variables.getUniqueVariables(scopeBlock.workspace);
-		} else {
-			scopeVars = Variables.getVarScopeList(scopeBlock);
-		}
-	}
-	let name = Variables.getUniqueName(thisBlock, scopeVars, newName);
-	let varId = thisBlock.variable_ && thisBlock.variable_.getId();
-	if (varId) {
-		thisBlock.workspace.renameVariableById(varId, name);
-	} else {
-		thisBlock.workspace.createVariable(name);
-	}
-	return name;
-}
-
-export const PROCEDURE_EXTENSION = function() {
-	this.mixin(NepoMix.PROCEDURE_MIXIN, true);
-	this.varScope = true;
-	this.scopeId_ = this.id;
-	this.varDecl = true;
-	this.setNextStatement(false);
-	this.setPreviousStatement(false);
-	this.getField("NAME").setValidator(Blockly.Procedures.rename);
-}
-
-export const PROCEDURE_CALL_EXTENSION = function() {
-	this.args_ = 0;
-	this.mixin(NepoMix.PROCEDURE_CALL_MIXIN, true);
 }
 
 export const DATATYPE_DROPDOWN_VALIDATOR_EXTENSION = function() {
@@ -206,3 +77,34 @@ export const DATATYPE_DROPDOWN_VALIDATOR_EXTENSION = function() {
 	});
 	this.getField("DATATYPE").doValueUpdate_(Nepo.dropdownTypes[0][1]);
 }
+
+export const IS_DIVISIBLE_MUTATOR_EXTENSION = function() {
+	this.getField('PROPERTY').setValidator(function(option: string) {
+		var divisorInput = (option == 'DIVISIBLE_BY');
+		this.getSourceBlock().updateShape_(divisorInput);
+	});
+}
+
+export const TEXT_QUOTES_EXTENSION = function() {
+	this.mixin(NepoMix.QUOTE_IMAGE_MIXIN);
+	this.quoteField_('TEXT');
+}
+
+export const TEXT_JOIN_EXTENSION = function() {
+	this.mixin(NepoMix.QUOTE_IMAGE_MIXIN);
+}
+
+export const TEXT_COMMENTS_EXTENSION = function() {
+	this.mixin(NepoMix.COMMENTS_IMAGE_MIXIN);
+	this.commentField_('TEXT');
+}
+
+export const TEXT_COMMENTS_VALIDATOR = function() {
+	this.getField('TEXT').setValidator(function(content: string) {
+		if (content && content.match(/[<>\$]/)) {
+			return null;
+		}
+		return content;
+	});
+}
+

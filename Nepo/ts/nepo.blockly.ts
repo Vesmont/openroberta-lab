@@ -2,12 +2,19 @@ import * as Blockly from "blockly";
 import "nepo.msg";
 import "nepo.blockly.overridings";
 import "nepo.extensions";
+import { Sensor } from "nepo.sensor";
 import { Log } from "utils/nepo.logger";
 
 const LOG = new Log();
+
 export abstract class Nepo {
+	static robot: string;
+	static robotGroup: string;
 	static dataTypes: Array<string>;
+	static listTypes: Array<string>;
 	static dropdownTypes: Array<Array<string>>;
+	static dropdownListTypes: Array<Array<string>>;
+
 
 	public static inject(domId: string) {
 		domId;
@@ -65,8 +72,22 @@ export abstract class Nepo {
 		return b;
 	}
 
-	public static defineDatatypes(json: object) {
-		this.dataTypes = json["dataTypes"];
+	public static defineBlocks(json: object) {
+		Nepo.robot = json["robot"];
+		Nepo.robotGroup = json["robotGroup"];
+		Nepo.defineDataTypes(json["dataTypes"]);
+		Nepo.defineListTypes(json["dataTypes"]);
+		Nepo.initSensors(json["sensors"], Nepo.robot, Nepo.robotGroup);
+	}
+
+	static initSensors(sensors: Array<object>, robot: string, robotGroup: string) {
+		for (let sensor of sensors) {
+			Blockly.Blocks["sensor_" + sensor["name"].toLowerCase() + "_getSample"] = new Sensor(sensor, robot, robotGroup);
+		}
+	}
+
+	static defineDataTypes(dataTypes: Array<string>) {
+		this.dataTypes = dataTypes;
 		let dropdownTypes: Array<Array<string>> = [];
 		Object.values(this.dataTypes).forEach(type => {
 			if (!!Blockly.Msg["DATA_TYPE_" + type.toUpperCase()]) {
@@ -77,10 +98,22 @@ export abstract class Nepo {
 			}
 		});
 		this.dropdownTypes = dropdownTypes;
-		LOG.info("defined listTypes", Blockly["listTypes"]);
+		LOG.info("defined data types", this.dataTypes);
+	}
 
-		Blockly['listTypes'] = json['listTypes'];
-		LOG.info("defined listTypes", this.dataTypes);
+	static defineListTypes(listTypes: Array<string>) {
+		this.listTypes = listTypes;
+		let dropdownTypes: Array<Array<string>> = [];
+		Object.values(this.dataTypes).forEach(type => {
+			if (!!Blockly.Msg["DATA_TYPE_" + type.toUpperCase()]) {
+				dropdownTypes.push([Blockly.Msg["DATA_TYPE_" + type.toUpperCase()], type]);
+			} else {
+				dropdownTypes.push(["DATA_TYPE_" + type.toUpperCase(), type]);
+				LOG.warn("Blockly message does not exists", "DATA_TYPE_" + type.toUpperCase());
+			}
+		});
+		this.dropdownListTypes = dropdownTypes;
+		LOG.info("defined data list types", this.listTypes);
 	}
 
 	public static defineCommonBlocks(commonBlocks: Object[]) {
@@ -95,18 +128,18 @@ export abstract class Nepo {
 			}
 		}
 		return false;
-	};
+	}
 
 	static checkMessages(block: Blockly.Block, key: string) {
 		let value = block[key];
 		let reg = new RegExp("message" + "(\\d+)");
 		let m = key.match(reg);
-		let title = "%{BKY_" + block.type.toUpperCase() + "_TITLE}";
+		let msg = "%{BKY_" + block.type.toUpperCase() + "}";
 
 		if (m != null) {
 			if (m[1] == "0") {
-				if (value.indexOf("BKY") >= 0 && !value.startsWith(title)) {
-					console.warn("Missing title in " + block.type.toUpperCase() + ": " + value);
+				if (value.indexOf("BKY") >= 0 && !value.startsWith(msg)) {
+					console.warn("Missing message for " + block.type + ": " + value);
 					return;
 				}
 			}
@@ -114,15 +147,13 @@ export abstract class Nepo {
 				let mes = value.slice(6, value.indexOf("}"));
 				if (Blockly.Msg[mes] == undefined) {
 					console.warn("No message for " + value + " defined!");
-				} else {
-					console.log(mes);
 				}
 			}
 		} else {
 			console.warn("Bad key for message: " + key);
 			return;
 		}
-	};
+	}
 
 	static checkOptions(block: Blockly.Block, key: string) {
 		if (block[key] instanceof Array) {
@@ -133,14 +164,12 @@ export abstract class Nepo {
 							let mes = option[0].slice(6, option[0].indexOf("}"));
 							if (Blockly.Msg[mes] == undefined) {
 								console.warn("No message for " + option[0] + " defined!");
-							} else {
-								console.log(mes);
 							}
 						}
-					});
+					})
 				}
-			});
+			})
 		}
-	};
+	}
 }
 

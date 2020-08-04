@@ -26,7 +26,7 @@ define(["require", "exports", "blockly", "ajv", "nepo.schema.robot", "nepo.theme
                 commonJSONBlockDescription = result;
             }
         }).always(function () {
-            $.getJSON('../RobotRaspberryPi/src/main/resources/nepoBlocks.json', function (result) {
+            $.getJSON('../RobotMbed/src/main/resources/calliope/nepoBlocks.json', function (result) {
                 if (validateSchema(result, schemaRobot.schema)) {
                     robotJSONBlockDescription = result;
                 }
@@ -42,7 +42,7 @@ define(["require", "exports", "blockly", "ajv", "nepo.schema.robot", "nepo.theme
             return;
         }
         var $toolbox = $('#toolbox-categories')[0];
-        nepo_blockly_1.Nepo.defineDatatypes(robotJSONBlockDescription);
+        nepo_blockly_1.Nepo.defineBlocks(robotJSONBlockDescription);
         var commonBlocks = nepo_blockly_1.Nepo.initCommonBlocks(commonJSONBlockDescription['blocks']);
         nepo_blockly_1.Nepo.defineCommonBlocks(commonBlocks);
         nepo_blockly_1.Nepo.inject("blocklyDiv");

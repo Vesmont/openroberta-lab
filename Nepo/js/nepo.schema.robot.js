@@ -10,7 +10,7 @@ define(["require", "exports"], function (require, exports) {
         "description": "A robot",
         "type": "object",
         "properties": {
-            "title": { "type": "string" },
+            "robot": { "type": "string" },
             "robotGroup": {
                 "type": "string",
             },
@@ -28,9 +28,12 @@ define(["require", "exports"], function (require, exports) {
                     "enum": exports.enumDatatypes,
                     "uniqueItems": true
                 }
+            },
+            "sensors": {
+                "type": "array"
             }
         },
-        "required": ["title", "robotGroup", "dataTypes", "listTypes"]
+        "required": ["robot", "robotGroup", "dataTypes", "listTypes", "sensors"]
     };
 });
 //# sourceMappingURL=nepo.schema.robot.js.map

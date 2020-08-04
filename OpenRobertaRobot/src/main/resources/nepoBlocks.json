@@ -3,7 +3,7 @@
 	"blocks": [
 		{
 			"type": "controls_start",
-			"message0": "%{BKY_CONTROLS_START_TITLE} %1",
+			"message0": "%{BKY_CONTROLS_START} %1",
 			"args0": [
 				{
 					"type": "input_dummy"
@@ -17,7 +17,7 @@
 		},
 		{
 			"type": "controls_if",
-			"message0": "%{BKY_CONTROLS_IF_TITLE} %1",
+			"message0": "%{BKY_CONTROLS_IF} %1",
 			"args0": [
 				{
 					"type": "input_value",
@@ -40,7 +40,7 @@
 		},
 		{
 			"type": "controls_repeat_ext",
-			"message0": "%{BKY_CONTROLS_REPEAT_EXT_TITLE}",
+			"message0": "%{BKY_CONTROLS_REPEAT_EXT}",
 			"args0": [
 				{
 					"type": "input_value",
@@ -92,7 +92,7 @@
 		},
 		{
 			"type": "controls_for",
-			"message0": "%{BKY_CONTROLS_FOR_TITLE}",
+			"message0": "%{BKY_CONTROLS_FOR}",
 			"args0": [
 				{
 					"type": "field_input",
@@ -133,7 +133,7 @@
 		},
 		{
 			"type": "controls_forEach",
-			"message0": "%{BKY_CONTROLS_FOREACH_TITLE}",
+			"message0": "%{BKY_CONTROLS_FOREACH}",
 			"args0": [
 				{
 					"type": "field_input",
@@ -181,7 +181,7 @@
 		},
 		{
 			"type": "controls_wait_time",
-			"message0": "%{BKY_CONTROLS_WAIT_TIME_TITLE} %1",
+			"message0": "%{BKY_CONTROLS_WAIT_TIME} %1",
 			"args0": [
 				{
 					"type": "input_value",
@@ -193,7 +193,7 @@
 		},
 		{
 			"type": "controls_wait_for",
-			"message0": "%{BKY_CONTROLS_WAIT_FOR_TITLE} %1",
+			"message0": "%{BKY_CONTROLS_WAIT_FOR} %1",
 			"args0": [
 				{
 					"type": "input_value",
@@ -444,12 +444,12 @@
 		},
 		{
 			"type": "math_change",
-			"message0": "%{BKY_MATH_CHANGE_TITLE}",
+			"message0": "%{BKY_MATH_CHANGE}",
 			"args0": [
 				{
 					"type": "field_variable",
 					"name": "VAR",
-					"variable": "%{BKY_MATH_CHANGE_TITLE_ITEM}"
+					"variable": "%{BKY_MATH_CHANGE_ITEM}"
 				},
 				{
 					"type": "input_value",
@@ -543,7 +543,7 @@
 		},
 		{
 			"type": "math_modulo",
-			"message0": "%{BKY_MATH_MODULO_TITLE}",
+			"message0": "%{BKY_MATH_MODULO}",
 			"args0": [
 				{
 					"type": "input_value",
@@ -562,7 +562,7 @@
 		},
 		{
 			"type": "math_constrain",
-			"message0": "%{BKY_MATH_CONSTRAIN_TITLE}",
+			"message0": "%{BKY_MATH_CONSTRAIN}",
 			"args0": [
 				{
 					"type": "input_value",
@@ -586,7 +586,7 @@
 		},
 		{
 			"type": "math_random_int",
-			"message0": "%{BKY_MATH_RANDOM_INT_TITLE}",
+			"message0": "%{BKY_MATH_RANDOM_INT}",
 			"args0": [
 				{
 					"type": "input_value",
@@ -605,13 +605,13 @@
 		},
 		{
 			"type": "math_random_float",
-			"message0": "%{BKY_MATH_RANDOM_FLOAT_TITLE}",
+			"message0": "%{BKY_MATH_RANDOM_FLOAT}",
 			"output": "Number",
 			"style": "math_blocks"
 		},
 		{
 			"type": "math_atan2",
-			"message0": "%{BKY_MATH_ATAN2_TITLE}",
+			"message0": "%{BKY_MATH_ATAN2}",
 			"args0": [
 				{
 					"type": "input_value",
@@ -732,7 +732,7 @@
 		},
 		{
 			"type": "logic_negate",
-			"message0": "%{BKY_LOGIC_NEGATE_TITLE}",
+			"message0": "%{BKY_LOGIC_NEGATE}",
 			"args0": [
 				{
 					"type": "input_value",
@@ -745,13 +745,13 @@
 		},
 		{
 			"type": "logic_null",
-			"message0": "%{BKY_LOGIC_NULL_TITLE}",
+			"message0": "%{BKY_LOGIC_NULL}",
 			"output": "Boolean",
 			"style": "logic_blocks"
 		},
 		{
 			"type": "logic_ternary",
-			"message0": "%{BKY_LOGIC_TERNARY_TITLE} %1",
+			"message0": "%{BKY_LOGIC_TERNARY} %1",
 			"args0": [
 				{
 					"type": "input_value",
@@ -811,7 +811,7 @@
 		},
 		{
 			"type": "text_join",
-			"message0": "%{BKY_TEXT_JOIN_TITLE} %1",
+			"message0": "%{BKY_TEXT_JOIN} %1",
 			"args0": [
 				{
 					"type": "input_value",
@@ -831,7 +831,7 @@
 		},
 		{
 			"type": "text_append",
-			"message0": "%{BKY_TEXT_APPEND_TITLE}",
+			"message0": "%{BKY_TEXT_APPEND}",
 			"args0": [
 				{
 					"type": "field_variable",
@@ -847,7 +847,7 @@
 		},
 		{
 			"type": "variable_declare",
-			"message0": "%{BKY_VARIABLE_GLOBAL_DECLARE_TITLE} %3",
+			"message0": "%{BKY_VARIABLE_DECLARE} %3",
 			"args0": [
 				{
 					"type": "field_input",
@@ -896,7 +896,7 @@
 			]
 		},
 		{
-			"type": "nepo_variables_get",
+			"type": "variables_get",
 			"message0": "%1",
 			"args0": [
 				{
@@ -907,11 +907,11 @@
 			"output": "Number",
 			"style": "variable_blocks",
 			"extensions": [
-				"variable_extension"
+				"variable_mixin"
 			]
 		},
 		{
-			"type": "nepo_variables_set",
+			"type": "variables_set",
 			"message0": "%{BKY_VARIABLES_SET}",
 			"args0": [
 				{
@@ -926,7 +926,7 @@
 			],
 			"style": "variable_blocks",
 			"extensions": [
-				"variable_extension"
+				"variable_mixin"
 			]
 		},
 		{

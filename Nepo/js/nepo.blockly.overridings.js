@@ -2,8 +2,63 @@ define(["require", "exports", "blockly", "nepo.mutator.plus", "nepo.mutator.minu
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var LOG = new nepo_logger_1.Log();
-    Blockly.Msg.check = function (key) {
-        return Blockly.Msg[key] || key;
+    Blockly.BlockSvg.prototype.getIcons = function () {
+        var icons = [];
+        if (this.mutatorPlus) {
+            icons.push(this.mutatorPlus);
+        }
+        if (this.mutatorMinus) {
+            icons.push(this.mutatorMinus);
+        }
+        if (this.commentIcon_) {
+            icons.push(this.commentIcon_);
+        }
+        if (this.warning) {
+            icons.push(this.warning);
+        }
+        return icons;
+    };
+    /**
+    * Give this block a mutator.
+    * @param {Blockly.Mutator} mutator A mutator instance or null to remove.
+    */
+    Blockly.BlockSvg.prototype.setMutator = function (mutator) {
+        if (this.mutatorPlus && mutator instanceof nepo_mutator_plus_1.MutatorPlus && this.mutatorPlus != mutator) {
+            this.mutatorPlus.dispose();
+        }
+        if (this.mutatorMinus && mutator instanceof nepo_mutator_minus_1.MutatorMinus && this.mutatorMinus != mutator) {
+            this.mutatorMinus.dispose();
+        }
+        if (mutator) {
+            mutator.setBlock(this);
+            if (mutator instanceof nepo_mutator_plus_1.MutatorPlus) {
+                this.mutatorPlus = mutator;
+            }
+            else if (mutator instanceof nepo_mutator_minus_1.MutatorMinus) {
+                this.mutatorMinus = mutator;
+            }
+            mutator.createIcon();
+        }
+        if (this.rendered) {
+            this.render();
+            // Adding or removing a mutator icon will cause the block to change shape.
+            this.bumpNeighbours();
+        }
+    };
+    Blockly.Extensions.apply = function (name, block, isMutator) {
+        var extensionFn = Blockly.Extensions.ALL_[name];
+        if (typeof extensionFn != 'function') {
+            return; //throw Error('Error: Extension "' + name + '" not found.');
+        }
+        if (isMutator) {
+            // Fail early if the block already has mutation properties.
+            Blockly.Extensions.checkNoMutatorProperties_(name, block);
+        }
+        extensionFn.apply(block);
+        if (isMutator) {
+            var errorPrefix = 'Error after applying mutator "' + name + '": ';
+            Blockly.Extensions.checkBlockHasMutatorProperties_(errorPrefix, block);
+        }
     };
     Blockly.Extensions.registerMutators = function (name, mutator, mixinObj, opt_helperFn) {
         var errorPrefix = 'Error when registering mutator "' + name + '": ';
@@ -35,102 +90,6 @@ define(["require", "exports", "blockly", "nepo.mutator.plus", "nepo.mutator.minu
             }
         });
     };
-    // overriding
-    Blockly.Extensions.apply = function (name, block, isMutator) {
-        var extensionFn = Blockly.Extensions.ALL_[name];
-        if (typeof extensionFn != 'function') {
-            return; //throw Error('Error: Extension "' + name + '" not found.');
-        }
-        if (isMutator) {
-            // Fail early if the block already has mutation properties.
-            Blockly.Extensions.checkNoMutatorProperties_(name, block);
-        }
-        extensionFn.apply(block);
-        if (isMutator) {
-            var errorPrefix = 'Error after applying mutator "' + name + '": ';
-            Blockly.Extensions.checkBlockHasMutatorProperties_(errorPrefix, block);
-        }
-    };
-    // overriding
-    /**
-    * Give this block a mutator.
-    * @param {Blockly.Mutator} mutator A mutator instance or null to remove.
-    */
-    Blockly.BlockSvg.prototype.setMutator = function (mutator) {
-        if (this.mutatorPlus && mutator instanceof nepo_mutator_plus_1.MutatorPlus && this.mutatorPlus != mutator) {
-            this.mutatorPlus.dispose();
-        }
-        if (this.mutatorMinus && mutator instanceof nepo_mutator_minus_1.MutatorMinus && this.mutatorMinus != mutator) {
-            this.mutatorMinus.dispose();
-        }
-        if (mutator) {
-            mutator.setBlock(this);
-            if (mutator instanceof nepo_mutator_plus_1.MutatorPlus) {
-                this.mutatorPlus = mutator;
-            }
-            else if (mutator instanceof nepo_mutator_minus_1.MutatorMinus) {
-                this.mutatorMinus = mutator;
-            }
-            mutator.createIcon();
-        }
-        if (this.rendered) {
-            this.render();
-            // Adding or removing a mutator icon will cause the block to change shape.
-            this.bumpNeighbours();
-        }
-    };
-    // overriding
-    Blockly.BlockSvg.prototype.getIcons = function () {
-        var icons = [];
-        if (this.mutatorPlus) {
-            icons.push(this.mutatorPlus);
-        }
-        if (this.mutatorMinus) {
-            icons.push(this.mutatorMinus);
-        }
-        if (this.commentIcon_) {
-            icons.push(this.commentIcon_);
-        }
-        if (this.warning) {
-            icons.push(this.warning);
-        }
-        return icons;
-    };
-    // override
-    Blockly.FieldVariable.dropdownCreate = function () {
-        if (!this.variable_) {
-            throw Error('Tried to call dropdownCreate on a variable field with no' +
-                ' variable selected.');
-        }
-        var variableModelList = [];
-        if (this.sourceBlock_ && this.sourceBlock_.workspace) {
-            variableModelList = Variables.getUniqueVariables(this.sourceBlock_.workspace);
-        }
-        var options = [];
-        variableModelList.forEach(function (variable) {
-            return options.push([variable.name, variable.getId()]);
-        });
-        return options;
-    };
-    Blockly.VariableMap.prototype.renameVariable = function (variable, newName) {
-        //var type = variable.type;
-        var conflictVar = null; // TODO if this is ok for all cases //this.getVariable(newName, type);
-        var blocks = this.workspace.getAllBlocks(false);
-        Blockly.Events.setGroup(true);
-        try {
-            // The IDs may match if the rename is a simple case change (name1 -> Name1).
-            if (!conflictVar || conflictVar.getId() == variable.getId()) {
-                this.renameVariableAndUses_(variable, newName, blocks);
-            }
-            else {
-                this.renameVariableWithConflict_(variable, newName, conflictVar, blocks);
-            }
-        }
-        finally {
-            Blockly.Events.setGroup(false);
-        }
-    };
-    //override
     Blockly.VariableMap.prototype.createVariable = function (name, opt_type, opt_id) {
         var variable = this.getVariable(name, opt_type);
         if (variable) {
@@ -172,10 +131,20 @@ define(["require", "exports", "blockly", "nepo.mutator.plus", "nepo.mutator.minu
         // Type Checks. Not wanted for Nepo
         return newId;
     };
-    Blockly.WorkspaceSvg.prototype.createVariable = function (name, opt_type, opt_id) {
-        var newVar = Blockly.WorkspaceSvg.superClass_.createVariable.call(this, name, opt_type, opt_id);
-        //this.refreshToolboxSelection(); // for nepo this is not used!
-        return newVar;
+    Blockly.FieldVariable.dropdownCreate = function () {
+        if (!this.variable_) {
+            throw Error('Tried to call dropdownCreate on a variable field with no' +
+                ' variable selected.');
+        }
+        var variableModelList = [];
+        if (this.sourceBlock_ && this.sourceBlock_.workspace) {
+            variableModelList = Variables.getUniqueVariables(this.sourceBlock_.workspace);
+        }
+        var options = [];
+        variableModelList.forEach(function (variable) {
+            return options.push([variable.name, variable.getId()]);
+        });
+        return options;
     };
     Blockly.FieldVariable.prototype.fromXml = function (fieldElement) {
         var id = fieldElement.getAttribute('id');
@@ -195,6 +164,29 @@ define(["require", "exports", "blockly", "nepo.mutator.plus", "nepo.mutator.minu
         // Nepo allows sometimes multiple Datatypes
         this.sourceBlock_.updateDataType(null);
         this.setValue(variable.getId());
+    };
+    Blockly.VariableMap.prototype.renameVariable = function (variable, newName) {
+        //var type = variable.type;
+        var conflictVar = null; // TODO if this is ok for all cases //this.getVariable(newName, type);
+        var blocks = this.workspace.getAllBlocks(false);
+        Blockly.Events.setGroup(true);
+        try {
+            // The IDs may match if the rename is a simple case change (name1 -> Name1).
+            if (!conflictVar || conflictVar.getId() == variable.getId()) {
+                this.renameVariableAndUses_(variable, newName, blocks);
+            }
+            else {
+                this.renameVariableWithConflict_(variable, newName, conflictVar, blocks);
+            }
+        }
+        finally {
+            Blockly.Events.setGroup(false);
+        }
+    };
+    Blockly.WorkspaceSvg.prototype.createVariable = function (name, opt_type, opt_id) {
+        var newVar = Blockly.WorkspaceSvg.superClass_.createVariable.call(this, name, opt_type, opt_id);
+        //this.refreshToolboxSelection(); // for nepo this is not used!
+        return newVar;
     };
 });
 //# sourceMappingURL=nepo.blockly.overridings.js.map

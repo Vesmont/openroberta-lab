@@ -7,7 +7,7 @@ export const schema = {
 	"description": "A robot",
 	"type": "object",
 	"properties": {
-		"title": { "type": "string" },
+		"robot": { "type": "string" },
 		"robotGroup": {
 			"type": "string",
 		},
@@ -25,7 +25,10 @@ export const schema = {
 				"enum": enumDatatypes,
 				"uniqueItems": true
 			}
+		},
+		"sensors": {
+			"type": "array"
 		}
 	},
-	"required": ["title", "robotGroup", "dataTypes", "listTypes"]
+	"required": ["robot", "robotGroup", "dataTypes", "listTypes", "sensors"]
 };

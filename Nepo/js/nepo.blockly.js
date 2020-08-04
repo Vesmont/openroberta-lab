@@ -1,4 +1,4 @@
-define(["require", "exports", "blockly", "utils/nepo.logger", "nepo.msg", "nepo.blockly.overridings", "nepo.extensions"], function (require, exports, Blockly, nepo_logger_1) {
+define(["require", "exports", "blockly", "nepo.sensor", "utils/nepo.logger", "nepo.msg", "nepo.blockly.overridings", "nepo.extensions"], function (require, exports, Blockly, nepo_sensor_1, nepo_logger_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Nepo = void 0;
@@ -59,8 +59,21 @@ define(["require", "exports", "blockly", "utils/nepo.logger", "nepo.msg", "nepo.
             }
             return b;
         };
-        Nepo.defineDatatypes = function (json) {
-            this.dataTypes = json["dataTypes"];
+        Nepo.defineBlocks = function (json) {
+            Nepo.robot = json["robot"];
+            Nepo.robotGroup = json["robotGroup"];
+            Nepo.defineDataTypes(json["dataTypes"]);
+            Nepo.defineListTypes(json["dataTypes"]);
+            Nepo.initSensors(json["sensors"], Nepo.robot, Nepo.robotGroup);
+        };
+        Nepo.initSensors = function (sensors, robot, robotGroup) {
+            for (var _i = 0, sensors_1 = sensors; _i < sensors_1.length; _i++) {
+                var sensor = sensors_1[_i];
+                Blockly.Blocks["sensor_" + sensor["name"].toLowerCase() + "_getSample"] = new nepo_sensor_1.Sensor(sensor, robot, robotGroup);
+            }
+        };
+        Nepo.defineDataTypes = function (dataTypes) {
+            this.dataTypes = dataTypes;
             var dropdownTypes = [];
             Object.values(this.dataTypes).forEach(function (type) {
                 if (!!Blockly.Msg["DATA_TYPE_" + type.toUpperCase()]) {
@@ -72,9 +85,22 @@ define(["require", "exports", "blockly", "utils/nepo.logger", "nepo.msg", "nepo.
                 }
             });
             this.dropdownTypes = dropdownTypes;
-            LOG.info("defined listTypes", Blockly["listTypes"]);
-            Blockly['listTypes'] = json['listTypes'];
-            LOG.info("defined listTypes", this.dataTypes);
+            LOG.info("defined data types", this.dataTypes);
+        };
+        Nepo.defineListTypes = function (listTypes) {
+            this.listTypes = listTypes;
+            var dropdownTypes = [];
+            Object.values(this.dataTypes).forEach(function (type) {
+                if (!!Blockly.Msg["DATA_TYPE_" + type.toUpperCase()]) {
+                    dropdownTypes.push([Blockly.Msg["DATA_TYPE_" + type.toUpperCase()], type]);
+                }
+                else {
+                    dropdownTypes.push(["DATA_TYPE_" + type.toUpperCase(), type]);
+                    LOG.warn("Blockly message does not exists", "DATA_TYPE_" + type.toUpperCase());
+                }
+            });
+            this.dropdownListTypes = dropdownTypes;
+            LOG.info("defined data list types", this.listTypes);
         };
         Nepo.defineCommonBlocks = function (commonBlocks) {
             var commonBlocksExtended = commonBlocks;
@@ -88,16 +114,15 @@ define(["require", "exports", "blockly", "utils/nepo.logger", "nepo.msg", "nepo.
             }
             return false;
         };
-        ;
         Nepo.checkMessages = function (block, key) {
             var value = block[key];
             var reg = new RegExp("message" + "(\\d+)");
             var m = key.match(reg);
-            var title = "%{BKY_" + block.type.toUpperCase() + "_TITLE}";
+            var msg = "%{BKY_" + block.type.toUpperCase() + "}";
             if (m != null) {
                 if (m[1] == "0") {
-                    if (value.indexOf("BKY") >= 0 && !value.startsWith(title)) {
-                        console.warn("Missing title in " + block.type.toUpperCase() + ": " + value);
+                    if (value.indexOf("BKY") >= 0 && !value.startsWith(msg)) {
+                        console.warn("Missing message for " + block.type + ": " + value);
                         return;
                     }
                 }
@@ -106,9 +131,6 @@ define(["require", "exports", "blockly", "utils/nepo.logger", "nepo.msg", "nepo.
                     if (Blockly.Msg[mes] == undefined) {
                         console.warn("No message for " + value + " defined!");
                     }
-                    else {
-                        console.log(mes);
-                    }
                 }
             }
             else {
@@ -116,7 +138,6 @@ define(["require", "exports", "blockly", "utils/nepo.logger", "nepo.msg", "nepo.
                 return;
             }
         };
-        ;
         Nepo.checkOptions = function (block, key) {
             if (block[key] instanceof Array) {
                 block[key].forEach(function (element) {
@@ -127,16 +148,12 @@ define(["require", "exports", "blockly", "utils/nepo.logger", "nepo.msg", "nepo.
                                 if (Blockly.Msg[mes] == undefined) {
                                     console.warn("No message for " + option[0] + " defined!");
                                 }
-                                else {
-                                    console.log(mes);
-                                }
                             }
                         });
                     }
                 });
             }
         };
-        ;
         return Nepo;
     }());
     exports.Nepo = Nepo;

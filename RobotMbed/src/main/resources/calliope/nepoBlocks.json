@@ -1,0 +1,262 @@
+{
+	"robot": "calliope",
+	"robotGroup": "calliope",
+	"dataTypes": [
+		"Number",
+		"Boolean",
+		"String"
+	],
+	"listTypes": [
+		"Number",
+		"Boolean",
+		"String"
+	],
+	"sensors": [
+		{
+			"name": "ACCELEROMETER",
+			"modes": [
+				{
+					"name": "VALUE",
+					"type": "Number",
+					"unit": "MILLIG",
+					"op": "NUM_REV",
+					"value": 0
+				}
+			],
+			"slots": [
+				[
+					"x",
+					"X"
+				],
+				[
+					"y",
+					"Y"
+				],
+				[
+					"z",
+					"Z"
+				],
+				[
+					"STRENGTH",
+					"STRENGTH"
+				]
+			]
+		},
+		{
+			"name": "COMPASS",
+			"modes": [
+				{
+					"name": "ANGLE",
+					"type": "Number",
+					"unit": "DEGREE"
+				}
+			]
+		},
+		{
+			"name": "GESTURE",
+			"modes": [
+				{
+					"name": "UP",
+					"type": "Boolean"
+				},
+				{
+					"name": "DOWN",
+					"type": "Boolean"
+				},
+				{
+					"name": "FACE_DOWN",
+					"type": "Boolean"
+				},
+				{
+					"name": "FACE_UP",
+					"type": "Boolean"
+				},
+				{
+					"name": "SHAKE",
+					"type": "Boolean"
+				},
+				{
+					"name": "FREEFALL",
+					"type": "Boolean"
+				}
+			]
+		},
+		{
+			"name": "GYRO",
+			"modes": [
+				{
+					"name": "ANGLE",
+					"type": "Number",
+					"unit": "DEGREE",
+					"op": "NUM_REV",
+					"value": 90
+				}
+			],
+			"slots": [
+				[
+					"x",
+					"X"
+				],
+				[
+					"y",
+					"Y"
+				]
+			]
+		},
+		{
+			"name": "HUMIDITY",
+			"modes": [
+				{
+					"name": "HUMIDITY",
+					"type": "Number",
+					"unit": "PERCENT"
+				},
+				{
+					"name": "TEMPERATURE",
+					"type": "Number",
+					"unit": "DEGREE"
+				}
+			]
+		},
+		{
+			"name": "INFRARED",
+			"modes": [
+				{
+					"name": "LINE",
+					"type": "Boolean"
+				}
+			]
+		},
+		{
+			"name": "KEY",
+			"modes": [
+				{
+					"name": "PRESSED",
+					"type": "Boolean",
+					"question": true
+				}
+			]
+		},
+		{
+			"name": "LIGHT",
+			"modes": [
+				{
+					"name": "VALUE",
+					"type": "Number",
+					"unit": "PERCENT"
+				}
+			]
+		},
+		{
+			"name": "PIN",
+			"dependOnMode": true,
+			"modes": [
+				{
+					"name": "ANALOG",
+					"type": "Number"
+				},
+				{
+					"name": "DIGITAL",
+					"type": "Number"
+				},
+				{
+					"name": "PULSEHIGH",
+					"type": "Number"
+				},
+				{
+					"name": "PULSELOW",
+					"type": "Number"
+				}
+			]
+		},
+		{
+			"name": "PINTOUCH",
+			"ports": [
+				[
+					" 0",
+					"0"
+				],
+				[
+					" 1",
+					"1"
+				],
+				[
+					" 2",
+					"2"
+				],
+				[
+					" 3",
+					"3"
+				]
+			],
+			"modes": [
+				{
+					"name": "PRESSED",
+					"type": "Boolean",
+					"question": true
+				}
+			],
+			"standardPort": "1"
+		},
+		{
+			"name": "RSSI",
+			"modes": [
+				{
+					"name": "VALUE",
+					"type": "Number"
+				}
+			]
+		},
+		{
+			"name": "SOUND",
+			"modes": [
+				{
+					"name": "SOUND",
+					"type": "Number",
+					"unit": "PERCENT",
+					"op": "NUM_REV",
+					"value": 50
+				}
+			]
+		},
+		{
+			"name": "TEMPERATURE",
+			"modes": [
+				{
+					"name": "VALUE",
+					"type": "Number",
+					"unit": "DEGREE",
+					"value": 20
+				}
+			]
+		},
+		{
+			"name": "TIMER",
+			"modes": [
+				{
+					"name": "VALUE",
+					"type": "Number",
+					"unit": "MS",
+					"op": "NUM_REV",
+					"value": 500
+				}
+			],
+			"ports": [
+				[
+					" 1",
+					"1"
+				]
+			]
+		},
+		{
+			"name": "ULTRASONIC",
+			"modes": [
+				{
+					"name": "DISTANCE",
+					"type": "Number",
+					"unit": "CM"
+				}
+			]
+		}
+	]
+}
