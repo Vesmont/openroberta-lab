@@ -188,5 +188,33 @@ define(["require", "exports", "blockly", "nepo.mutator.plus", "nepo.mutator.minu
         //this.refreshToolboxSelection(); // for nepo this is not used!
         return newVar;
     };
+    Blockly.FieldDropdown.prototype.initView = function () {
+        if (this.shouldAddBorderRect_()) {
+            this.createBorderRect_();
+        }
+        else {
+            this.clickTarget_ = this.sourceBlock_.getSvgRoot();
+        }
+        this.createTextElement_();
+        this.imageElement_ = /** @type {!SVGImageElement} */
+            (Blockly.utils.dom.createSvgElement('image', {}, this.fieldGroup_));
+        // do not create an arrow if there is only one entry in the dropdown!
+        if (this.getOptions().length >= 2) {
+            if (this.getConstants().FIELD_DROPDOWN_SVG_ARROW) {
+                this.createSVGArrow_();
+            }
+            else {
+                this.createTextArrow_();
+            }
+        }
+        else {
+            // but create an empty "arrow"
+            this.arrow_ = (Blockly.utils.dom.createSvgElement('tspan', {}, this.textElement_));
+            this.arrow_.appendChild(document.createTextNode(''));
+        }
+        if (this.borderRect_) {
+            Blockly.utils.dom.addClass(this.borderRect_, 'blocklyDropdownRect');
+        }
+    };
 });
 //# sourceMappingURL=nepo.blockly.overridings.js.map

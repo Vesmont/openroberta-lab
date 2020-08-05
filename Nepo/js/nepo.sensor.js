@@ -1,4 +1,4 @@
-define(["require", "exports", "blockly", "nepo.blockly.hiddenField", "utils/util", "utils/nepo.logger"], function (require, exports, Blockly, nepo_blockly_hiddenField_1, U, nepo_logger_1) {
+define(["require", "exports", "blockly", "nepo.blockly.hiddenField", "utils/util", "nepo.programConfigSync", "utils/nepo.logger"], function (require, exports, Blockly, nepo_blockly_hiddenField_1, U, sync, nepo_logger_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Sensor = void 0;
@@ -56,11 +56,11 @@ define(["require", "exports", "blockly", "nepo.blockly.hiddenField", "utils/util
                     ports = new Blockly.FieldDropdown(portsList);
                 }
                 else if (!this.sensor.ports) {
-                    var sensorName = this.sensor.name;
+                    var sensorName = "sensor_" + this.sensor["name"].toLowerCase();
                     if (this.sensor.dependOnMode) {
-                        sensorName = this.sensor.modes[0].name + 'OUT';
+                        sensorName = "sensor_" + this.sensor.modes[0].name + 'OUT';
                     }
-                    ports = U.getConfigPorts(sensorName.toLowerCase());
+                    ports = sync.getConfigPorts(sensorName.toLowerCase());
                     this.dependConfig = {
                         'type': sensorName.toLowerCase(),
                         'dropDown': ports
@@ -109,9 +109,9 @@ define(["require", "exports", "blockly", "nepo.blockly.hiddenField", "utils/util
                 this.setOutput(true, firstMode.type);
                 this.setTooltip(function () {
                     var mode = thisBlock.getFieldValue('MODE');
-                    return Blockly.Msg['SENSOR_' + this.sensor.name + '_' + mode + '_GETSAMPLE_TOOLTIP_' + thisBlock.robot.toUpperCase()]
-                        || Blockly.Msg['SENSOR_' + this.sensor.name + '_' + mode + '_GETSAMPLE_TOOLTIP']
-                        || Blockly.Msg['SENSOR_' + this.sensor.name + '_GETSAMPLE_TOOLTIP'] || U.checkMsgKey('SENSOR_' + this.sensor.name + '_GETSAMPLE_TOOLTIP');
+                    return Blockly.Msg['SENSOR_' + thisBlock.sensor.name + '_' + mode + '_GETSAMPLE_TOOLTIP_' + thisBlock.robot.toUpperCase()]
+                        || Blockly.Msg['SENSOR_' + thisBlock.sensor.name + '_' + mode + '_GETSAMPLE_TOOLTIP']
+                        || Blockly.Msg['SENSOR_' + thisBlock.sensor.name + '_GETSAMPLE_TOOLTIP'] || U.checkMsgKey('SENSOR_' + thisBlock.sensor.name + '_GETSAMPLE_TOOLTIP');
                 });
                 if (this.sensorMode_) {
                     this.mutationToDom = function () {
@@ -167,7 +167,7 @@ define(["require", "exports", "blockly", "nepo.blockly.hiddenField", "utils/util
                                         option = 'DIGITAL'; // workaround for calliope pulses
                                     }
                                     var configBlockName = option.toLowerCase() + 'out';
-                                    var dropDownPorts = U.getConfigPorts(configBlockName);
+                                    var dropDownPorts = sync.getConfigPorts(configBlockName);
                                     var fieldSensorPort = thisBlock.getField('SENSORPORT');
                                     thisBlock.dependConfig.type = configBlockName;
                                     fieldSensorPort.menuGenerator_ = dropDownPorts.menuGenerator_;

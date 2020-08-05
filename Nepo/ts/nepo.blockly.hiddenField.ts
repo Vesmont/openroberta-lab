@@ -8,13 +8,13 @@ export class HiddenField extends Blockly.FieldLabel {
 		this.isVisible = function() {
 			return false;
 		};
-		
+
 		this.render_ = function() {
 			// nothing to render.
 		}
 		this.isSerializable = function() {
-  
-  return true;
-};
+
+			return true;
+		};
 	}
 }

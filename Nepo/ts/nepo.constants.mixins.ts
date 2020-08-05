@@ -22,7 +22,7 @@ export const CONTROLS_IF_MUTATOR_MIXIN = {
 	 * @this {Blockly.Block}
 	 */
 
-	mutationToDom: function() {
+	mutationToDom: function () {
 		if (!this.elseifCount_ && !this.elseCount_) {
 			return null;
 		}
@@ -40,7 +40,7 @@ export const CONTROLS_IF_MUTATOR_MIXIN = {
 	 * @param {!Element} xmlElement XML storage element.
 	 * @this {Blockly.Block}
 	 */
-	domToMutation: function(xmlElement: any) {
+	domToMutation: function (xmlElement: any) {
 		this.elseifCount_ = parseInt(xmlElement.getAttribute('elseif'), 10) || 0;
 		this.elseCount_ = parseInt(xmlElement.getAttribute('else'), 10) || 0;
 		for (var x = 1; x <= this.elseifCount_; x++) {
@@ -59,7 +59,7 @@ export const CONTROLS_IF_MUTATOR_MIXIN = {
 	 * @param {Number} number +1 add at the end, -1 remove last.
 	 * @this Blockly.Block
 	 */
-	updateShape_: function(num: number) {
+	updateShape_: function (num: number) {
 		let elseStatementConnection: Blockly.Connection;
 		if (this.getInput('ELSE')) {
 			elseStatementConnection = this.getInput('ELSE').connection.targetConnection;
@@ -112,7 +112,7 @@ export const CONTROLS_WAIT_FOR_MUTATOR_MIXIN = {
 	 * @this {Blockly.Block}
 	 */
 
-	mutationToDom: function() {
+	mutationToDom: function () {
 		if (!this.waitCount_ && !this.elseCount_) {
 			return null;
 		}
@@ -127,7 +127,7 @@ export const CONTROLS_WAIT_FOR_MUTATOR_MIXIN = {
 	 * @param {!Element} xmlElement XML storage element.
 	 * @this {Blockly.Block}
 	 */
-	domToMutation: function(xmlElement: any) {
+	domToMutation: function (xmlElement: any) {
 		this.waitCount_ = parseInt(xmlElement.getAttribute('wait'), 10) || 0;
 		if (this.waitCount_ >= 1) {
 			this.setMutator(new MutatorMinus());
@@ -144,7 +144,7 @@ export const CONTROLS_WAIT_FOR_MUTATOR_MIXIN = {
 	 * @param {Number} number of else inputs.
 	 * @this Blockly.Block
 	 */
-	updateShape_: function(num: number) {
+	updateShape_: function (num: number) {
 		if (num == 1) {
 			this.waitCount_++;
 			if (this.waitCount_ == 1) {
@@ -197,7 +197,7 @@ export const COMMENTS_IMAGE_MIXIN = {
 	 * @param {string} fieldName The name of the field to wrap with quotes.
 	 * @this {Blockly.Block}
 	 */
-	commentField_: function(fieldName) {
+	commentField_: function (fieldName) {
 		for (var i = 0, input; (input = this.inputList[i]); i++) {
 			for (var j = 0, field; (field = input.fieldRow[j]); j++) {
 				if (fieldName == field.name) {
@@ -218,7 +218,7 @@ export const COMMENTS_IMAGE_MIXIN = {
 	 * @return {!Blockly.FieldImage} The new field.
 	 * @this {Blockly.Block}
 	 */
-	newComment_: function(open) {
+	newComment_: function (open) {
 		var isLeft = this.RTL ? !open : open;
 		var dataUri = isLeft ?
 			this.COMMENTS_IMAGE_LEFT :
@@ -232,20 +232,20 @@ export const COMMENTS_IMAGE_MIXIN = {
 }
 
 export const COMMON_TYPE_MIXIN = {
-	mutationToDom: function() {
+	mutationToDom: function () {
 		let container = document.createElement('mutation');
 		if (this.dataType_) {
 			container.setAttribute("datatype", this.dataType_);
 			return container;
 		}
 	},
-	domToMutation: function(xmlElement) {
+	domToMutation: function (xmlElement) {
 		var dataType = xmlElement.getAttribute("datatype");
 		if (dataType) {
 			this.updateDataType(dataType);
 		}
 	},
-	updateDataType: function(dataType) {
+	updateDataType: function (dataType) {
 		this.dataType_ = dataType;
 		if (this.outputConnection) {
 			this.outputConnection.setCheck(dataType);
@@ -265,7 +265,7 @@ export const IS_DIVISIBLEBY_MUTATOR_MIXIN = {
 	 * @return {!Element} XML storage element.
 	 * @this {Blockly.Block}
 	 */
-	mutationToDom: function() {
+	mutationToDom: function () {
 		var container = (Blockly.utils as any).xml.createElement('mutation');
 		var divisorInput = (this.getFieldValue('PROPERTY') == 'DIVISIBLE_BY');
 		container.setAttribute('divisor_input', divisorInput);
@@ -276,7 +276,7 @@ export const IS_DIVISIBLEBY_MUTATOR_MIXIN = {
 	 * @param {!Element} xmlElement XML storage element.
 	 * @this {Blockly.Block}
 	 */
-	domToMutation: function(xmlElement: any) {
+	domToMutation: function (xmlElement: any) {
 		var divisorInput = (xmlElement.getAttribute('divisor_input') == 'true');
 		this.updateShape_(divisorInput);
 	},
@@ -286,7 +286,7 @@ export const IS_DIVISIBLEBY_MUTATOR_MIXIN = {
 	 * @private
 	 * @this {Blockly.Block}
 	 */
-	updateShape_: function(divisorInput: string) {
+	updateShape_: function (divisorInput: string) {
 		// Add or remove a Value Input.
 		var inputExists = this.getInput('DIVISOR');
 		if (divisorInput) {
@@ -307,7 +307,7 @@ export const TEXT_JOIN_MUTATOR_MIXIN = {
 	 * @return {!Element} XML storage element.
 	 * @this {Blockly.Block}
 	 */
-	mutationToDom: function() {
+	mutationToDom: function () {
 		var container = (Blockly.utils as any).xml.createElement('mutation');
 		container.setAttribute('items', this.itemCount_);
 		return container;
@@ -317,13 +317,13 @@ export const TEXT_JOIN_MUTATOR_MIXIN = {
 	 * @param {!Element} xmlElement XML storage element.
 	 * @this {Blockly.Block}
 	 */
-	domToMutation: function(xmlElement) {
+	domToMutation: function (xmlElement) {
 		this.itemCount_ = parseInt(xmlElement.getAttribute('items'), 10);
 		for (let x = 2; x <= this.itemCount_; x++) {
 			this.appendValueInput('ADD' + x).setCheck('Boolean');
 		}
 	},
-	updateShape_: function(num: number) {
+	updateShape_: function (num: number) {
 		if (num == 1) {
 			this.itemCount_++;
 			this.appendValueInput('ADD' + this.itemCount_);
@@ -385,7 +385,7 @@ export const QUOTE_IMAGE_MIXIN = {
 	 * @param {string} fieldName The name of the field to wrap with quotes.
 	 * @this {Blockly.Block}
 	 */
-	quoteField_: function(fieldName) {
+	quoteField_: function (fieldName) {
 		for (var i = 0, input; (input = this.inputList[i]); i++) {
 			for (var j = 0, field; (field = input.fieldRow[j]); j++) {
 				if (fieldName == field.name) {
@@ -406,7 +406,7 @@ export const QUOTE_IMAGE_MIXIN = {
 	 * @return {!Blockly.FieldImage} The new field.
 	 * @this {Blockly.Block}
 	 */
-	newQuote_: function(open) {
+	newQuote_: function (open) {
 		var isLeft = this.RTL ? !open : open;
 		var dataUri = isLeft ?
 			this.QUOTE_IMAGE_LEFT_DATAURI :

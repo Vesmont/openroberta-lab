@@ -3,6 +3,7 @@ import "nepo.msg";
 import "nepo.blockly.overridings";
 import "nepo.extensions";
 import { Sensor } from "nepo.sensor";
+import { Configuration } from "nepo.configuration";
 import { Log } from "utils/nepo.logger";
 
 const LOG = new Log();
@@ -72,17 +73,34 @@ export abstract class Nepo {
 		return b;
 	}
 
-	public static defineBlocks(json: object) {
-		Nepo.robot = json["robot"];
-		Nepo.robotGroup = json["robotGroup"];
-		Nepo.defineDataTypes(json["dataTypes"]);
-		Nepo.defineListTypes(json["dataTypes"]);
-		Nepo.initSensors(json["sensors"], Nepo.robot, Nepo.robotGroup);
+	public static defineBlocks(jsonRobotBlocks: object, jsonCommonBlocks: object) {
+		Nepo.robot = jsonRobotBlocks["robot"];
+		Nepo.robotGroup = jsonRobotBlocks["robotGroup"];
+		Nepo.defineDataTypes(jsonRobotBlocks["dataTypes"]);
+		Nepo.defineListTypes(jsonRobotBlocks["dataTypes"]);
+		Nepo.defineSensors(jsonRobotBlocks["sensors"], Nepo.robot, Nepo.robotGroup);
+		Nepo.defineConfiguration(jsonRobotBlocks["configurations"], Nepo.robot, Nepo.robotGroup);
+		Nepo.defineCommonBlocks(Nepo.initCommonBlocks(jsonCommonBlocks['blocks']));
 	}
 
-	static initSensors(sensors: Array<object>, robot: string, robotGroup: string) {
-		for (let sensor of sensors) {
-			Blockly.Blocks["sensor_" + sensor["name"].toLowerCase() + "_getSample"] = new Sensor(sensor, robot, robotGroup);
+	static defineSensors(sensors: Array<object>, robot: string, robotGroup: string) {
+		let getSamples = sensors["getSample"];
+		for (let getSample of getSamples) {
+			Blockly.Blocks["sensor_" + getSample["name"].toLowerCase() + "_getSample"] = new Sensor(getSample, robot, robotGroup);
+		}
+		let others = sensors["other"];
+		if (others) {
+			Blockly.defineBlocksWithJsonArray(Nepo.initCommonBlocks(others));
+		}
+	}
+
+	static defineConfiguration(configurations: Array<object>, robot: string, robotGroup: string) {
+		for (let conf of configurations) {
+			Blockly.Blocks[conf["category"].toLowerCase() + "_" + conf["name"].toLowerCase()] = new Configuration(conf, robot, robotGroup);
+		}
+		let others = configurations["other"];
+		if (others) {
+			Blockly.defineBlocksWithJsonArray(Nepo.initCommonBlocks(others))
 		}
 	}
 
@@ -116,7 +134,7 @@ export abstract class Nepo {
 		LOG.info("defined data list types", this.listTypes);
 	}
 
-	public static defineCommonBlocks(commonBlocks: Object[]) {
+	static defineCommonBlocks(commonBlocks: Object[]) {
 		let commonBlocksExtended = commonBlocks;
 		Blockly.defineBlocksWithJsonArray(commonBlocksExtended);
 	}

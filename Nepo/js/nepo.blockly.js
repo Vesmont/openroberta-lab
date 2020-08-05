@@ -1,4 +1,4 @@
-define(["require", "exports", "blockly", "nepo.sensor", "utils/nepo.logger", "nepo.msg", "nepo.blockly.overridings", "nepo.extensions"], function (require, exports, Blockly, nepo_sensor_1, nepo_logger_1) {
+define(["require", "exports", "blockly", "nepo.sensor", "nepo.configuration", "utils/nepo.logger", "nepo.msg", "nepo.blockly.overridings", "nepo.extensions"], function (require, exports, Blockly, nepo_sensor_1, nepo_configuration_1, nepo_logger_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Nepo = void 0;
@@ -59,17 +59,34 @@ define(["require", "exports", "blockly", "nepo.sensor", "utils/nepo.logger", "ne
             }
             return b;
         };
-        Nepo.defineBlocks = function (json) {
-            Nepo.robot = json["robot"];
-            Nepo.robotGroup = json["robotGroup"];
-            Nepo.defineDataTypes(json["dataTypes"]);
-            Nepo.defineListTypes(json["dataTypes"]);
-            Nepo.initSensors(json["sensors"], Nepo.robot, Nepo.robotGroup);
+        Nepo.defineBlocks = function (jsonRobotBlocks, jsonCommonBlocks) {
+            Nepo.robot = jsonRobotBlocks["robot"];
+            Nepo.robotGroup = jsonRobotBlocks["robotGroup"];
+            Nepo.defineDataTypes(jsonRobotBlocks["dataTypes"]);
+            Nepo.defineListTypes(jsonRobotBlocks["dataTypes"]);
+            Nepo.defineSensors(jsonRobotBlocks["sensors"], Nepo.robot, Nepo.robotGroup);
+            Nepo.defineConfiguration(jsonRobotBlocks["configurations"], Nepo.robot, Nepo.robotGroup);
+            Nepo.defineCommonBlocks(Nepo.initCommonBlocks(jsonCommonBlocks['blocks']));
         };
-        Nepo.initSensors = function (sensors, robot, robotGroup) {
-            for (var _i = 0, sensors_1 = sensors; _i < sensors_1.length; _i++) {
-                var sensor = sensors_1[_i];
-                Blockly.Blocks["sensor_" + sensor["name"].toLowerCase() + "_getSample"] = new nepo_sensor_1.Sensor(sensor, robot, robotGroup);
+        Nepo.defineSensors = function (sensors, robot, robotGroup) {
+            var getSamples = sensors["getSample"];
+            for (var _i = 0, getSamples_1 = getSamples; _i < getSamples_1.length; _i++) {
+                var getSample = getSamples_1[_i];
+                Blockly.Blocks["sensor_" + getSample["name"].toLowerCase() + "_getSample"] = new nepo_sensor_1.Sensor(getSample, robot, robotGroup);
+            }
+            var others = sensors["other"];
+            if (others) {
+                Blockly.defineBlocksWithJsonArray(Nepo.initCommonBlocks(others));
+            }
+        };
+        Nepo.defineConfiguration = function (configurations, robot, robotGroup) {
+            for (var _i = 0, configurations_1 = configurations; _i < configurations_1.length; _i++) {
+                var conf = configurations_1[_i];
+                Blockly.Blocks[conf["category"].toLowerCase() + "_" + conf["name"].toLowerCase()] = new nepo_configuration_1.Configuration(conf, robot, robotGroup);
+            }
+            var others = configurations["other"];
+            if (others) {
+                Blockly.defineBlocksWithJsonArray(Nepo.initCommonBlocks(others));
             }
         };
         Nepo.defineDataTypes = function (dataTypes) {

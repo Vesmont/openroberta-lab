@@ -6,8 +6,6 @@ define(["require", "exports", "blockly", "ajv", "nepo.schema.robot", "nepo.theme
     var $bricklyArea = $("#bricklyArea");
     var $blocklyDiv = $("#blocklyDiv");
     var $bricklyDiv = $("#bricklyDiv");
-    var blocklyWorkspace;
-    var bricklyWorkspace;
     var ajv = new Ajv();
     var commonJSONBlockDescription;
     var robotJSONBlockDescription;
@@ -41,14 +39,14 @@ define(["require", "exports", "blockly", "ajv", "nepo.schema.robot", "nepo.theme
             console.assert(commonJSONBlockDescription && robotJSONBlockDescription ? true : false, "error Beate");
             return;
         }
-        var $toolbox = $('#toolbox-categories')[0];
-        nepo_blockly_1.Nepo.defineBlocks(robotJSONBlockDescription);
-        var commonBlocks = nepo_blockly_1.Nepo.initCommonBlocks(commonJSONBlockDescription['blocks']);
-        nepo_blockly_1.Nepo.defineCommonBlocks(commonBlocks);
+        var programToolbox = $('#program-toolbox')[0];
+        var configToolbox = $('#config-toolbox')[0];
+        // TODO: call this somewhere in the Open Roberta Lab static resources whenever a new plugin is chosen. Make sure you got the correct files from a rest call.
+        nepo_blockly_1.Nepo.defineBlocks(robotJSONBlockDescription, commonJSONBlockDescription);
         nepo_blockly_1.Nepo.inject("blocklyDiv");
         nepoThemeClassic.setTheme();
-        blocklyWorkspace = Blockly.inject('blocklyDiv', {
-            "toolbox": $toolbox, zoom: {
+        window.blocklyWorkspace = Blockly.inject('blocklyDiv', {
+            "toolbox": programToolbox, zoom: {
                 controls: true,
                 wheel: true,
                 startScale: 1.0,
@@ -58,8 +56,10 @@ define(["require", "exports", "blockly", "ajv", "nepo.schema.robot", "nepo.theme
             },
             trashcan: true
         });
-        bricklyWorkspace = Blockly.inject('bricklyDiv', { "toolbox": $toolbox });
+        ;
+        window.bricklyWorkspace = Blockly.inject('bricklyDiv', { "toolbox": configToolbox });
         blocklyWorkspace.setTheme(Blockly["Themes"]["NepoClassic"]);
+        bricklyWorkspace.setTheme(Blockly["Themes"]["NepoClassic"]);
         blocklyWorkspace.registerToolboxCategoryCallback('NEPO_VARIABLE', Variables.flyoutCallback);
         blocklyWorkspace.registerToolboxCategoryCallback('NEPO_PROCEDURE', Procedures.flyoutCallback);
         // add default start block
@@ -69,7 +69,7 @@ define(["require", "exports", "blockly", "ajv", "nepo.schema.robot", "nepo.theme
             "</block>" +
             "</xml>");
         Blockly.Xml.domToWorkspace(xml, blocklyWorkspace);
-        blocklyWorkspace.addChangeListener(function (event) { console.log(event); });
+        //blocklyWorkspace.addChangeListener(function(event) { console.log(event) });
         resizeAll();
         Blockly.svgResize(blocklyWorkspace);
     }

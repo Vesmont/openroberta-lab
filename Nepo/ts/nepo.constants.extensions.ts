@@ -6,12 +6,12 @@ import { Nepo } from "nepo.blockly";
 const LOG = new Log();
 LOG;
 
-export const COMMON_TOOLTIP_EXTENSION = function() {
+export const COMMON_TOOLTIP_EXTENSION = function () {
 	var thisBlock = this;
 	var type = thisBlock.type.toUpperCase();
 	// define the standard tooltip
 	var tooltip = "%{BKY_" + type + "_TOOLTIP}";
-	this.setTooltip(function() {
+	this.setTooltip(function () {
 		// check if there are dropdowns or variable used in the block
 		let dropDownValue = "";
 		let dropDownText = "";
@@ -41,19 +41,19 @@ export const COMMON_TOOLTIP_EXTENSION = function() {
 	});
 }
 
-export const COMMON_PARENT_TOOLTIP_EXTENSION = function() {
+export const COMMON_PARENT_TOOLTIP_EXTENSION = function () {
 	// this refers to the block that the extension is being run on, we need
 	// to cache it so that it can be used inside the tooltip function.
 	var thisBlock = this;
-	this.setTooltip(function() {
+	this.setTooltip(function () {
 		var parent = thisBlock.getParent();
 		return (parent && parent.getInputsInline() && parent.tooltip) ||
 			Blockly.utils.replaceMessageReferences("%{BKY_" + thisBlock.type.toUpperCase() + "_TOOLTIP}");
 	});
 }
 
-export const CONTROLS_IF_TOOLTIP_EXTENSION = function() {
-	this.setTooltip(function() {
+export const CONTROLS_IF_TOOLTIP_EXTENSION = function () {
+	this.setTooltip(function () {
 		if (!this.elseifCount_ && !this.elseCount_) {
 			return Blockly.Msg['CONTROLS_IF_TOOLTIP_1'];
 		} else if (!this.elseifCount_ && this.elseCount_) {
@@ -67,10 +67,10 @@ export const CONTROLS_IF_TOOLTIP_EXTENSION = function() {
 	}.bind(this));
 }
 
-export const DATATYPE_DROPDOWN_VALIDATOR_EXTENSION = function() {
+export const DATATYPE_DROPDOWN_VALIDATOR_EXTENSION = function () {
 	(Blockly.FieldDropdown as any).validateOptions_(Nepo.dropdownTypes);
 	this.getField("DATATYPE").menuGenerator_ = Nepo.dropdownTypes;
-	this.getField("DATATYPE").setValidator(function(option: string) {
+	this.getField("DATATYPE").setValidator(function (option: string) {
 		if (option && option !== this.sourceBlock_.getFieldValue('DATATYPE')) {
 			this.sourceBlock_.updateDataType(option);
 		}
@@ -78,29 +78,29 @@ export const DATATYPE_DROPDOWN_VALIDATOR_EXTENSION = function() {
 	this.getField("DATATYPE").doValueUpdate_(Nepo.dropdownTypes[0][1]);
 }
 
-export const IS_DIVISIBLE_MUTATOR_EXTENSION = function() {
-	this.getField('PROPERTY').setValidator(function(option: string) {
+export const IS_DIVISIBLE_MUTATOR_EXTENSION = function () {
+	this.getField('PROPERTY').setValidator(function (option: string) {
 		var divisorInput = (option == 'DIVISIBLE_BY');
 		this.getSourceBlock().updateShape_(divisorInput);
 	});
 }
 
-export const TEXT_QUOTES_EXTENSION = function() {
+export const TEXT_QUOTES_EXTENSION = function () {
 	this.mixin(NepoMix.QUOTE_IMAGE_MIXIN);
 	this.quoteField_('TEXT');
 }
 
-export const TEXT_JOIN_EXTENSION = function() {
+export const TEXT_JOIN_EXTENSION = function () {
 	this.mixin(NepoMix.QUOTE_IMAGE_MIXIN);
 }
 
-export const TEXT_COMMENTS_EXTENSION = function() {
+export const TEXT_COMMENTS_EXTENSION = function () {
 	this.mixin(NepoMix.COMMENTS_IMAGE_MIXIN);
 	this.commentField_('TEXT');
 }
 
-export const TEXT_COMMENTS_VALIDATOR = function() {
-	this.getField('TEXT').setValidator(function(content: string) {
+export const TEXT_COMMENTS_VALIDATOR = function () {
+	this.getField('TEXT').setValidator(function (content: string) {
 		if (content && content.match(/[<>\$]/)) {
 			return null;
 		}

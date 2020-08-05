@@ -1,6 +1,7 @@
 import * as Blockly from "blockly";
 import { HiddenField } from "nepo.blockly.hiddenField";
 import * as U from "utils/util";
+import * as sync from "nepo.programConfigSync";
 import { Log } from "utils/nepo.logger";
 
 Log;
@@ -18,12 +19,12 @@ export class Sensor {
 		this.sensor = sensor;
 	}
 
-	init = function() {
+	init = function () {
 		this.type = "sensor_" + this.sensor["name"].toLowerCase() + '_getSample';
 		this.setStyle("sensor_blocks");
 
 		var thisBlock = this;
-		
+
 		// what kind of modes do we have?
 		var modes;
 		if (this.sensor.modes[0].name && !this.sensor.modes[0].question) {
@@ -31,7 +32,7 @@ export class Sensor {
 			for (var i = 0; i < this.sensor.modes.length; i++) {
 				modeArray.push([Blockly.Msg['MODE_' + this.sensor.modes[i].name] || U.checkMsgKey('MODE_' + this.sensor.modes[i].name), this.sensor.modes[i].name]);
 			}
-			modes = new Blockly.FieldDropdown(modeArray, function(option) {
+			modes = new Blockly.FieldDropdown(modeArray, function (option) {
 				if (option && this.sourceBlock_.getFieldValue('MODE') !== option) {
 					this.sourceBlock_.updateShape_(option);
 				}
@@ -39,7 +40,7 @@ export class Sensor {
 		} else {
 			modes = new HiddenField();
 		}
-		
+
 		// do we have ports?
 		var ports;
 		this.sensorPort_ = 'NO';
@@ -54,7 +55,7 @@ export class Sensor {
 				for (var i = 0; i < this.sensor.ports.length; i++) {
 					portsList.push([Blockly.Msg[this.sensor.ports[i].port[0]] || this.sensor.ports[i].port[0], this.sensor.ports[i].port[1]]);
 				}
-				ports = new Blockly.FieldDropdown(portsList, function(option) {
+				ports = new Blockly.FieldDropdown(portsList, function (option) {
 					if (option && this.sourceBlock_.getFieldValue('SENSORPORT') !== option) {
 						this.sourceBlock_.updatePort_(option);
 					}
@@ -68,11 +69,11 @@ export class Sensor {
 			}
 			ports = new Blockly.FieldDropdown(portsList);
 		} else if (!this.sensor.ports) {
-			var sensorName = this.sensor.name;
+			var sensorName = "sensor_" + this.sensor["name"].toLowerCase();
 			if (this.sensor.dependOnMode) {
-				sensorName = this.sensor.modes[0].name + 'OUT';
+				sensorName = "sensor_" + this.sensor.modes[0].name + 'OUT';
 			}
-			ports = U.getConfigPorts(sensorName.toLowerCase());
+			ports = sync.getConfigPorts(sensorName.toLowerCase());
 			this.dependConfig = {
 				'type': sensorName.toLowerCase(),
 				'dropDown': ports
@@ -80,7 +81,7 @@ export class Sensor {
 		} else {
 			ports = new HiddenField();
 		}
-		
+
 		// do we have a slots?
 		var slots;
 		if (this.sensor.slots) {
@@ -118,15 +119,15 @@ export class Sensor {
 		this.sensorMode_ = firstMode.name;
 		this.setOutput(true, firstMode.type);
 
-		this.setTooltip(function() {
+		this.setTooltip(function () {
 			var mode = thisBlock.getFieldValue('MODE');
-			return Blockly.Msg['SENSOR_' + this.sensor.name + '_' + mode + '_GETSAMPLE_TOOLTIP_' + thisBlock.robot.toUpperCase()]
-				|| Blockly.Msg['SENSOR_' + this.sensor.name + '_' + mode + '_GETSAMPLE_TOOLTIP']
-				|| Blockly.Msg['SENSOR_' + this.sensor.name + '_GETSAMPLE_TOOLTIP'] || U.checkMsgKey('SENSOR_' + this.sensor.name + '_GETSAMPLE_TOOLTIP');
+			return Blockly.Msg['SENSOR_' + thisBlock.sensor.name + '_' + mode + '_GETSAMPLE_TOOLTIP_' + thisBlock.robot.toUpperCase()]
+				|| Blockly.Msg['SENSOR_' + thisBlock.sensor.name + '_' + mode + '_GETSAMPLE_TOOLTIP']
+				|| Blockly.Msg['SENSOR_' + thisBlock.sensor.name + '_GETSAMPLE_TOOLTIP'] || U.checkMsgKey('SENSOR_' + thisBlock.sensor.name + '_GETSAMPLE_TOOLTIP');
 		});
 
 		if (this.sensorMode_) {
-			this.mutationToDom = function() {
+			this.mutationToDom = function () {
 				var container = document.createElement('mutation');
 				container.setAttribute('mode', this.sensorMode_);
 				if (this.sensorPort_ !== 'NO') {
@@ -134,7 +135,7 @@ export class Sensor {
 				}
 				return container;
 			};
-			this.domToMutation = function(xmlElement) {
+			this.domToMutation = function (xmlElement) {
 				this.sensorMode_ = xmlElement.getAttribute('mode');
 				this.updateShape_(this.sensorMode_);
 				this.sensorPort_ = xmlElement.getAttribute('port') || 'NO';
@@ -142,7 +143,7 @@ export class Sensor {
 					this.updatePort_(this.sensorPort_);
 				}
 			};
-			this.updateShape_ = function(option) {
+			this.updateShape_ = function (option) {
 				for (var i = 0; i < this.sensor.modes.length; i++) {
 					if (this.sensor.modes[i].name === option) {
 						this.setOutput(true, this.sensor.modes[i].type);
@@ -180,7 +181,7 @@ export class Sensor {
 								option = 'DIGITAL'; // workaround for calliope pulses
 							}
 							var configBlockName = option.toLowerCase() + 'out';
-							var dropDownPorts = U.getConfigPorts(configBlockName);
+							var dropDownPorts = sync.getConfigPorts(configBlockName);
 							var fieldSensorPort = thisBlock.getField('SENSORPORT');
 							thisBlock.dependConfig.type = configBlockName;
 							fieldSensorPort.menuGenerator_ = dropDownPorts.menuGenerator_;
@@ -196,7 +197,7 @@ export class Sensor {
 				this.sensorMode_ = option;
 			}
 			// this is a really special case for nao so far
-			this.updatePort_ = function(option) {
+			this.updatePort_ = function (option) {
 				for (var i = 0; i < this.sensor.ports.length; i++) {
 					if (this.sensor.ports[i].port[1] === option) {
 						let fieldSensorSlot = thisBlock.getField('SLOT');

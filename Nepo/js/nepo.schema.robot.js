@@ -30,10 +30,13 @@ define(["require", "exports"], function (require, exports) {
                 }
             },
             "sensors": {
+                "type": "object"
+            },
+            "configurations": {
                 "type": "array"
             }
         },
-        "required": ["robot", "robotGroup", "dataTypes", "listTypes", "sensors"]
+        "required": ["robot", "robotGroup", "dataTypes", "listTypes", "sensors", "configurations"]
     };
 });
 //# sourceMappingURL=nepo.schema.robot.js.map

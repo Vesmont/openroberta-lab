@@ -27,8 +27,11 @@ export const schema = {
 			}
 		},
 		"sensors": {
+			"type": "object"
+		},
+		"configurations": {
 			"type": "array"
 		}
 	},
-	"required": ["robot", "robotGroup", "dataTypes", "listTypes", "sensors"]
+	"required": ["robot", "robotGroup", "dataTypes", "listTypes", "sensors", "configurations"]
 };

@@ -6,7 +6,7 @@ import { Log } from "utils/nepo.logger";
 
 const LOG = new Log();
 
-Blockly.BlockSvg.prototype.getIcons = function() {
+Blockly.BlockSvg.prototype.getIcons = function () {
 	var icons = [];
 	if (this.mutatorPlus) {
 		icons.push(this.mutatorPlus);
@@ -16,6 +16,7 @@ Blockly.BlockSvg.prototype.getIcons = function() {
 	}
 	if (this.commentIcon_) {
 		icons.push(this.commentIcon_);
+
 	}
 	if (this.warning) {
 		icons.push(this.warning);
@@ -27,7 +28,7 @@ Blockly.BlockSvg.prototype.getIcons = function() {
 * Give this block a mutator.
 * @param {Blockly.Mutator} mutator A mutator instance or null to remove.
 */
-(Blockly.BlockSvg as any).prototype.setMutator = function(mutator: Blockly.Mutator) {
+(Blockly.BlockSvg as any).prototype.setMutator = function (mutator: Blockly.Mutator) {
 	if (this.mutatorPlus && mutator instanceof MutatorPlus && this.mutatorPlus != mutator) {
 		this.mutatorPlus.dispose();
 	}
@@ -50,7 +51,7 @@ Blockly.BlockSvg.prototype.getIcons = function() {
 	}
 };
 
-(Blockly.Extensions as any).apply = function(name, block, isMutator) {
+(Blockly.Extensions as any).apply = function (name, block, isMutator) {
 	var extensionFn = (Blockly.Extensions as any).ALL_[name];
 	if (typeof extensionFn != 'function') {
 		return;//throw Error('Error: Extension "' + name + '" not found.');
@@ -67,7 +68,7 @@ Blockly.BlockSvg.prototype.getIcons = function() {
 	}
 };
 
-(Blockly.Extensions as any).registerMutators = function(name: string, mutator: string, mixinObj: object, opt_helperFn: Function) {
+(Blockly.Extensions as any).registerMutators = function (name: string, mutator: string, mixinObj: object, opt_helperFn: Function) {
 	var errorPrefix = 'Error when registering mutator "' + name + '": ';
 
 	// Sanity check the mixin object before registering it.
@@ -82,7 +83,7 @@ Blockly.BlockSvg.prototype.getIcons = function() {
 		throw Error('Extension "' + name + '" is not a function');
 	}
 	// Sanity checks passed.
-	(Blockly.Extensions as any).register(name, function() {
+	(Blockly.Extensions as any).register(name, function () {
 		if (hasMutator) {
 			if (!MutatorPlus || !MutatorMinus) {
 				throw Error(errorPrefix + 'Missing require for Blockly.Mutator');
@@ -104,7 +105,7 @@ Blockly.BlockSvg.prototype.getIcons = function() {
 	});
 }
 
-Blockly.VariableMap.prototype.createVariable = function(name, opt_type, opt_id) {
+Blockly.VariableMap.prototype.createVariable = function (name, opt_type, opt_id) {
 	var variable = this.getVariable(name, opt_type);
 	if (variable) {
 		if (opt_id && variable.getId() != opt_id) {
@@ -131,7 +132,7 @@ Blockly.VariableMap.prototype.createVariable = function(name, opt_type, opt_id) 
 	return variable;
 }
 
-Blockly.FieldVariable.prototype.doClassValidation_ = function(opt_newValue) {
+Blockly.FieldVariable.prototype.doClassValidation_ = function (opt_newValue) {
 	if (opt_newValue === null) {
 		return null;
 	}
@@ -147,7 +148,7 @@ Blockly.FieldVariable.prototype.doClassValidation_ = function(opt_newValue) {
 	return newId;
 }
 
-Blockly.FieldVariable.dropdownCreate = function() {
+Blockly.FieldVariable.dropdownCreate = function () {
 	if (!this.variable_) {
 		throw Error('Tried to call dropdownCreate on a variable field with no' +
 			' variable selected.');
@@ -162,7 +163,7 @@ Blockly.FieldVariable.dropdownCreate = function() {
 	return options;
 }
 
-Blockly.FieldVariable.prototype.fromXml = function(fieldElement) {
+Blockly.FieldVariable.prototype.fromXml = function (fieldElement) {
 	var id = fieldElement.getAttribute('id');
 	var variableName = fieldElement.textContent;
 	// 'variabletype' should be lowercase, but until July 2019 it was sometimes
@@ -185,7 +186,7 @@ Blockly.FieldVariable.prototype.fromXml = function(fieldElement) {
 	this.setValue(variable.getId());
 }
 
-Blockly.VariableMap.prototype.renameVariable = function(variable, newName) {
+Blockly.VariableMap.prototype.renameVariable = function (variable, newName) {
 	//var type = variable.type;
 	var conflictVar = null; // TODO if this is ok for all cases //this.getVariable(newName, type);
 	var blocks = this.workspace.getAllBlocks(false);
@@ -202,10 +203,38 @@ Blockly.VariableMap.prototype.renameVariable = function(variable, newName) {
 	}
 }
 
-Blockly.WorkspaceSvg.prototype.createVariable = function(name,
+Blockly.WorkspaceSvg.prototype.createVariable = function (name,
 	opt_type, opt_id) {
 	var newVar = (Blockly.WorkspaceSvg as any).superClass_.createVariable.call(
 		this, name, opt_type, opt_id);
 	//this.refreshToolboxSelection(); // for nepo this is not used!
 	return newVar;
 }
+
+Blockly.FieldDropdown.prototype.initView = function () {
+	if (this.shouldAddBorderRect_()) {
+		this.createBorderRect_();
+	} else {
+		this.clickTarget_ = this.sourceBlock_.getSvgRoot();
+	}
+	this.createTextElement_();
+
+	this.imageElement_ = /** @type {!SVGImageElement} */
+		(Blockly.utils.dom.createSvgElement('image', {}, this.fieldGroup_));
+	// do not create an arrow if there is only one entry in the dropdown!
+	if (this.getOptions().length >= 2) {
+		if (this.getConstants().FIELD_DROPDOWN_SVG_ARROW) {
+			this.createSVGArrow_();
+		} else {
+			this.createTextArrow_();
+		}
+	} else {
+		// but create an empty "arrow"
+		this.arrow_ = (Blockly.utils.dom.createSvgElement('tspan', {}, this.textElement_));
+		this.arrow_.appendChild(document.createTextNode(''));
+	}
+
+	if (this.borderRect_) {
+		Blockly.utils.dom.addClass(this.borderRect_, 'blocklyDropdownRect');
+	}
+};

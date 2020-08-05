@@ -878,7 +878,7 @@
 		},
 		{
 			"type": "variable_scope",
-			"message0": "{ %1 %2",
+			"message0": "{ %1 %2 } %3",
 			"args0": [
 				{
 					"type": "input_dummy",
@@ -886,7 +886,13 @@
 				},
 				{
 					"type": "input_statement",
-					"name": "DO"
+					"name": "DO",
+					"align": "RIGHT"
+				},
+				{
+					"type": "input_value",
+					"name": "DUMMY",
+					"align": "RIGHT"
 				}
 			],
 			"style": "variable_blocks",

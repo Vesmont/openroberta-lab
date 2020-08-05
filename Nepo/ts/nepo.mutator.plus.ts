@@ -1,4 +1,5 @@
 import * as Blockly from "blockly";
+
 export class MutatorPlus extends Blockly.Mutator {
 	constructor() {
 		super([]);

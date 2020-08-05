@@ -11,252 +11,850 @@
 		"Boolean",
 		"String"
 	],
-	"sensors": [
-		{
-			"name": "ACCELEROMETER",
-			"modes": [
-				{
-					"name": "VALUE",
-					"type": "Number",
-					"unit": "MILLIG",
-					"op": "NUM_REV",
-					"value": 0
-				}
-			],
-			"slots": [
-				[
-					"x",
-					"X"
+	"sensors": {
+		"getSample": [
+			{
+				"name": "ACCELEROMETER",
+				"modes": [
+					{
+						"name": "VALUE",
+						"type": "Number",
+						"unit": "MILLIG",
+						"op": "NUM_REV",
+						"value": 0
+					}
 				],
-				[
-					"y",
-					"Y"
-				],
-				[
-					"z",
-					"Z"
-				],
-				[
-					"STRENGTH",
-					"STRENGTH"
+				"slots": [
+					[
+						"x",
+						"X"
+					],
+					[
+						"y",
+						"Y"
+					],
+					[
+						"z",
+						"Z"
+					],
+					[
+						"STRENGTH",
+						"STRENGTH"
+					]
 				]
-			]
-		},
+			},
+			{
+				"name": "COMPASS",
+				"modes": [
+					{
+						"name": "ANGLE",
+						"type": "Number",
+						"unit": "DEGREE"
+					}
+				]
+			},
+			{
+				"name": "GESTURE",
+				"modes": [
+					{
+						"name": "UP",
+						"type": "Boolean"
+					},
+					{
+						"name": "DOWN",
+						"type": "Boolean"
+					},
+					{
+						"name": "FACE_DOWN",
+						"type": "Boolean"
+					},
+					{
+						"name": "FACE_UP",
+						"type": "Boolean"
+					},
+					{
+						"name": "SHAKE",
+						"type": "Boolean"
+					},
+					{
+						"name": "FREEFALL",
+						"type": "Boolean"
+					}
+				]
+			},
+			{
+				"name": "GYRO",
+				"modes": [
+					{
+						"name": "ANGLE",
+						"type": "Number",
+						"unit": "DEGREE",
+						"op": "NUM_REV",
+						"value": 90
+					}
+				],
+				"slots": [
+					[
+						"x",
+						"X"
+					],
+					[
+						"y",
+						"Y"
+					]
+				]
+			},
+			{
+				"name": "HUMIDITY",
+				"modes": [
+					{
+						"name": "HUMIDITY",
+						"type": "Number",
+						"unit": "PERCENT"
+					},
+					{
+						"name": "TEMPERATURE",
+						"type": "Number",
+						"unit": "DEGREE"
+					}
+				]
+			},
+			{
+				"name": "INFRARED",
+				"modes": [
+					{
+						"name": "LINE",
+						"type": "Boolean"
+					}
+				]
+			},
+			{
+				"name": "KEY",
+				"modes": [
+					{
+						"name": "PRESSED",
+						"type": "Boolean",
+						"question": true
+					}
+				]
+			},
+			{
+				"name": "LIGHT",
+				"modes": [
+					{
+						"name": "VALUE",
+						"type": "Number",
+						"unit": "PERCENT"
+					}
+				]
+			},
+			{
+				"name": "PIN",
+				"dependOnMode": true,
+				"modes": [
+					{
+						"name": "ANALOG",
+						"type": "Number"
+					},
+					{
+						"name": "DIGITAL",
+						"type": "Number"
+					},
+					{
+						"name": "PULSEHIGH",
+						"type": "Number"
+					},
+					{
+						"name": "PULSELOW",
+						"type": "Number"
+					}
+				]
+			},
+			{
+				"name": "PINTOUCH",
+				"ports": [
+					[
+						" 0",
+						"0"
+					],
+					[
+						" 1",
+						"1"
+					],
+					[
+						" 2",
+						"2"
+					],
+					[
+						" 3",
+						"3"
+					]
+				],
+				"modes": [
+					{
+						"name": "PRESSED",
+						"type": "Boolean",
+						"question": true
+					}
+				],
+				"standardPort": "1"
+			},
+			{
+				"name": "RSSI",
+				"modes": [
+					{
+						"name": "VALUE",
+						"type": "Number"
+					}
+				]
+			},
+			{
+				"name": "SOUND",
+				"modes": [
+					{
+						"name": "SOUND",
+						"type": "Number",
+						"unit": "PERCENT",
+						"op": "NUM_REV",
+						"value": 50
+					}
+				]
+			},
+			{
+				"name": "TEMPERATURE",
+				"modes": [
+					{
+						"name": "VALUE",
+						"type": "Number",
+						"unit": "DEGREE",
+						"value": 20
+					}
+				]
+			},
+			{
+				"name": "TIMER",
+				"modes": [
+					{
+						"name": "VALUE",
+						"type": "Number",
+						"unit": "MS",
+						"op": "NUM_REV",
+						"value": 500
+					}
+				],
+				"ports": [
+					[
+						" 1",
+						"1"
+					],
+					[
+						" 2",
+						"2"
+					],
+					[
+						" 3",
+						"3"
+					],
+					[
+						" 4",
+						"4"
+					],
+					[
+						" 5",
+						"5"
+					]
+				]
+			},
+			{
+				"name": "ULTRASONIC",
+				"modes": [
+					{
+						"name": "DISTANCE",
+						"type": "Number",
+						"unit": "CM"
+					}
+				]
+			}
+		],
+		"other": [
+			{
+				"type": "sensor_timer_reset",
+				"message0": "%{BKY_SENSOR_TIMER_RESET}",
+				"args0": [
+					{
+						"type": "field_dropdown",
+						"name": "PORT",
+						"options": [
+							[
+								"%{BKY_SENSOR_TIMER} 1",
+								"1"
+							],
+							[
+								"%{BKY_SENSOR_TIMER} 2",
+								"2"
+							],
+							[
+								"%{BKY_SENSOR_TIMER} 3",
+								"3"
+							],
+							[
+								"%{BKY_SENSOR_TIMER} 4",
+								"4"
+							],
+							[
+								"%{BKY_SENSOR_TIMER} 5",
+								"5"
+							]
+						]
+					}
+				],
+				"style": "sensor_blocks"
+			}
+		]
+	},
+	"configurations": [
 		{
-			"name": "COMPASS",
-			"modes": [
-				{
-					"name": "ANGLE",
-					"type": "Number",
-					"unit": "DEGREE"
-				}
-			]
-		},
-		{
-			"name": "GESTURE",
-			"modes": [
-				{
-					"name": "UP",
-					"type": "Boolean"
-				},
-				{
-					"name": "DOWN",
-					"type": "Boolean"
-				},
-				{
-					"name": "FACE_DOWN",
-					"type": "Boolean"
-				},
-				{
-					"name": "FACE_UP",
-					"type": "Boolean"
-				},
-				{
-					"name": "SHAKE",
-					"type": "Boolean"
-				},
-				{
-					"name": "FREEFALL",
-					"type": "Boolean"
-				}
-			]
-		},
-		{
-			"name": "GYRO",
-			"modes": [
-				{
-					"name": "ANGLE",
-					"type": "Number",
-					"unit": "DEGREE",
-					"op": "NUM_REV",
-					"value": 90
-				}
-			],
-			"slots": [
+			"name": "ULTRASONIC",
+			"ports": [
 				[
-					"x",
-					"X"
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"A1",
+					"1"
 				],
 				[
-					"y",
-					"Y"
+					"Calli:bot",
+					"2"
 				]
-			]
-		},
-		{
-			"name": "HUMIDITY",
-			"modes": [
-				{
-					"name": "HUMIDITY",
-					"type": "Number",
-					"unit": "PERCENT"
-				},
-				{
-					"name": "TEMPERATURE",
-					"type": "Number",
-					"unit": "DEGREE"
-				}
-			]
-		},
-		{
-			"name": "INFRARED",
-			"modes": [
-				{
-					"name": "LINE",
-					"type": "Boolean"
-				}
-			]
-		},
-		{
-			"name": "KEY",
-			"modes": [
-				{
-					"name": "PRESSED",
-					"type": "Boolean",
-					"question": true
-				}
-			]
+			],
+			"category": "sensor"
 		},
 		{
 			"name": "LIGHT",
-			"modes": [
-				{
-					"name": "VALUE",
-					"type": "Number",
-					"unit": "PERCENT"
-				}
-			]
-		},
-		{
-			"name": "PIN",
-			"dependOnMode": true,
-			"modes": [
-				{
-					"name": "ANALOG",
-					"type": "Number"
-				},
-				{
-					"name": "DIGITAL",
-					"type": "Number"
-				},
-				{
-					"name": "PULSEHIGH",
-					"type": "Number"
-				},
-				{
-					"name": "PULSELOW",
-					"type": "Number"
-				}
-			]
-		},
-		{
-			"name": "PINTOUCH",
 			"ports": [
 				[
-					" 0",
-					"0"
-				],
+					"pin",
+					"PIN1"
+				]
+			],
+			"category": "sensor"
+		},
+		{
+			"name": "ACCELEROMETER",
+			"ports": [
 				[
-					" 1",
-					"1"
-				],
+					"pin",
+					"PIN1"
+				]
+			],
+			"category": "sensor"
+		},
+		{
+			"name": "COMPASS",
+			"ports": [
 				[
-					" 2",
+					"pin",
+					"PIN1"
+				]
+			],
+			"category": "sensor"
+		},
+		{
+			"name": "INFRARED",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"Calli:bot links",
 					"2"
 				],
 				[
-					" 3",
-					"3"
+					"Calli:bot rechts",
+					"1"
 				]
 			],
-			"modes": [
-				{
-					"name": "PRESSED",
-					"type": "Boolean",
-					"question": true
-				}
-			],
-			"standardPort": "1"
-		},
-		{
-			"name": "RSSI",
-			"modes": [
-				{
-					"name": "VALUE",
-					"type": "Number"
-				}
-			]
-		},
-		{
-			"name": "SOUND",
-			"modes": [
-				{
-					"name": "SOUND",
-					"type": "Number",
-					"unit": "PERCENT",
-					"op": "NUM_REV",
-					"value": 50
-				}
-			]
+			"category": "sensor"
 		},
 		{
 			"name": "TEMPERATURE",
-			"modes": [
-				{
-					"name": "VALUE",
-					"type": "Number",
-					"unit": "DEGREE",
-					"value": 20
-				}
-			]
-		},
-		{
-			"name": "TIMER",
-			"modes": [
-				{
-					"name": "VALUE",
-					"type": "Number",
-					"unit": "MS",
-					"op": "NUM_REV",
-					"value": 500
-				}
-			],
 			"ports": [
 				[
-					" 1",
-					"1"
+					"pin",
+					"PIN1"
 				]
+			],
+			"category": "sensor"
+		},
+		{
+			"name": "HUMIDITY",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"A1",
+					"5"
+				]
+			],
+			"category": "sensor"
+		},
+		{
+			"name": "KEY",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"A",
+					"A"
+				],
+				[
+					"B",
+					"B"
+				]
+			],
+			"category": "sensor",
+			"standardPins": [
+				"A"
 			]
 		},
 		{
-			"name": "ULTRASONIC",
-			"modes": [
-				{
-					"name": "DISTANCE",
-					"type": "Number",
-					"unit": "CM"
-				}
-			]
+			"name": "LED",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"Calli:bot links",
+					"1"
+				],
+				[
+					"Calli:bot rechts",
+					"2"
+				],
+				[
+					"Calli:bot beide",
+					"3"
+				]
+			],
+			"category": "action"
+		},
+		{
+			"name": "BUZZER",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"category": "action"
+		},
+		{
+			"name": "SOUND",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"category": "sensor"
+		},
+		{
+			"name": "RGBLED",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"Port intern",
+					"0"
+				],
+				[
+					"Calli:bot links vorne",
+					"1"
+				],
+				[
+					"Calli:bot rechts vorne",
+					"4"
+				],
+				[
+					"Calli:bot links hinten",
+					"2"
+				],
+				[
+					"Calli:bot rechts hinten",
+					"3"
+				],
+				[
+					"Calli:bot alle",
+					"5"
+				]
+			],
+			"category": "action"
+		},
+		{
+			"name": "SERVO",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"category": "action"
+		},
+		{
+			"name": "GYRO",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"category": "sensor"
+		},
+		{
+			"name": "MOTOR",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"Port A",
+					"A"
+				],
+				[
+					"Port B",
+					"B"
+				],
+				[
+					"Calli:bot links",
+					"0"
+				],
+				[
+					"Calli:bot rechts",
+					"2"
+				]
+			],
+			"category": "action"
+		},
+		{
+			"name": "DIGITALOUT",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"P0",
+					"0"
+				],
+				[
+					"P1",
+					"1"
+				],
+				[
+					"P2",
+					"2"
+				],
+				[
+					"P3",
+					"3"
+				],
+				[
+					"A0",
+					"4"
+				],
+				[
+					"A1",
+					"5"
+				],
+				[
+					"C04",
+					"C04"
+				],
+				[
+					"C05",
+					"C05"
+				],
+				[
+					"C06",
+					"C06"
+				],
+				[
+					"C07",
+					"C07"
+				],
+				[
+					"C08",
+					"C08"
+				],
+				[
+					"C09",
+					"C09"
+				],
+				[
+					"C10",
+					"C10"
+				],
+				[
+					"C11",
+					"C11"
+				],
+				[
+					"C12",
+					"C12"
+				],
+				[
+					"C16",
+					"C16"
+				],
+				[
+					"C17",
+					"C17"
+				],
+				[
+					"C18",
+					"C18"
+				],
+				[
+					"C19",
+					"C19"
+				]
+			],
+			"category": "sensor"
+		},
+		{
+			"name": "ANALOGOUT",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"P1",
+					"1"
+				],
+				[
+					"P2",
+					"2"
+				],
+				[
+					"A1",
+					"5"
+				],
+				[
+					"C04",
+					"C04"
+				],
+				[
+					"C05",
+					"C05"
+				],
+				[
+					"C06",
+					"C06"
+				],
+				[
+					"C16",
+					"C16"
+				],
+				[
+					"C17",
+					"C17"
+				]
+			],
+			"category": "sensor"
+		},
+		{
+			"name": "DIGITALIN",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"P0",
+					"0"
+				],
+				[
+					"P1",
+					"1"
+				],
+				[
+					"P2",
+					"2"
+				],
+				[
+					"P3",
+					"3"
+				],
+				[
+					"A0",
+					"4"
+				],
+				[
+					"A1",
+					"5"
+				],
+				[
+					"C04",
+					"C04"
+				],
+				[
+					"C05",
+					"C05"
+				],
+				[
+					"C06",
+					"C06"
+				],
+				[
+					"C07",
+					"C07"
+				],
+				[
+					"C08",
+					"C08"
+				],
+				[
+					"C09",
+					"C09"
+				],
+				[
+					"C10",
+					"C10"
+				],
+				[
+					"C11",
+					"C11"
+				],
+				[
+					"C12",
+					"C12"
+				],
+				[
+					"C16",
+					"C16"
+				],
+				[
+					"C17",
+					"C17"
+				],
+				[
+					"C18",
+					"C18"
+				],
+				[
+					"C19",
+					"C19"
+				]
+			],
+			"category": "action"
+		},
+		{
+			"name": "ANALOGIN",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"P1",
+					"1"
+				],
+				[
+					"P2",
+					"2"
+				],
+				[
+					"A1",
+					"5"
+				],
+				[
+					"C04",
+					"C04"
+				],
+				[
+					"C05",
+					"C05"
+				],
+				[
+					"C06",
+					"C06"
+				],
+				[
+					"C16",
+					"C16"
+				],
+				[
+					"C17",
+					"C17"
+				]
+			],
+			"category": "action"
+		},
+		{
+			"name": "FOURDIGITDISPLAY",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"A1",
+					"5"
+				]
+			],
+			"category": "action"
+		},
+		{
+			"name": "LEDBAR",
+			"ports": [
+				[
+					"pin",
+					"PIN1"
+				]
+			],
+			"pins": [
+				[
+					"A1",
+					"5"
+				]
+			],
+			"category": "action"
 		}
 	]
 }

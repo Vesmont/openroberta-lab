@@ -11,8 +11,10 @@ const $blocklyArea: JQuery = $("#blocklyArea");
 const $bricklyArea: JQuery = $("#bricklyArea");
 const $blocklyDiv: JQuery = $("#blocklyDiv");
 const $bricklyDiv: JQuery = $("#bricklyDiv");
-var blocklyWorkspace: any;
-var bricklyWorkspace: any;
+
+declare var blocklyWorkspace;
+declare var bricklyWorkspace;
+
 var ajv = new Ajv();
 
 var commonJSONBlockDescription: object;
@@ -23,22 +25,22 @@ var robotJSONBlockDescription: object;
 export function init() {
 	var Export = document.getElementById("export");
 	var Import = document.getElementById("import");
-	Export.onclick = function() {
+	Export.onclick = function () {
 		toXml();
 	}
-	Import.onclick = function() {
+	Import.onclick = function () {
 		fromXml();
 	}
-	$.getJSON('../OpenRobertaRobot/src/main/resources/nepoBlocks.json', function(result) {
+	$.getJSON('../OpenRobertaRobot/src/main/resources/nepoBlocks.json', function (result) {
 		if (validateSchema(result, schemaCommon.schema)) {
 			commonJSONBlockDescription = result;
 		}
-	}).always(function() {
-		$.getJSON('../RobotMbed/src/main/resources/calliope/nepoBlocks.json', function(result) {
+	}).always(function () {
+		$.getJSON('../RobotMbed/src/main/resources/calliope/nepoBlocks.json', function (result) {
 			if (validateSchema(result, schemaRobot.schema)) {
 				robotJSONBlockDescription = result;
 			}
-		}).always(function() {
+		}).always(function () {
 			initBlockly();
 		});
 	});
@@ -49,15 +51,15 @@ function initBlockly() {
 		console.assert(commonJSONBlockDescription && robotJSONBlockDescription ? true : false, "error Beate");
 		return;
 	}
-	var $toolbox = $('#toolbox-categories')[0];
-	Nepo.defineBlocks(robotJSONBlockDescription);
+	var programToolbox = $('#program-toolbox')[0];
+	var configToolbox = $('#config-toolbox')[0];
+	// TODO: call this somewhere in the Open Roberta Lab static resources whenever a new plugin is chosen. Make sure you got the correct files from a rest call.
+	Nepo.defineBlocks(robotJSONBlockDescription, commonJSONBlockDescription);
 
-	let commonBlocks: Object[] = Nepo.initCommonBlocks(commonJSONBlockDescription['blocks']);
-	Nepo.defineCommonBlocks(commonBlocks);
 	Nepo.inject("blocklyDiv");
 	nepoThemeClassic.setTheme();
-	blocklyWorkspace = Blockly.inject('blocklyDiv', {
-		"toolbox": $toolbox, zoom:
+	(window as any).blocklyWorkspace = Blockly.inject('blocklyDiv', {
+		"toolbox": programToolbox, zoom:
 		{
 			controls: true,
 			wheel: true,
@@ -68,8 +70,10 @@ function initBlockly() {
 		},
 		trashcan: true
 	});
-	bricklyWorkspace = Blockly.inject('bricklyDiv', { "toolbox": $toolbox });
+	;
+	(window as any).bricklyWorkspace = Blockly.inject('bricklyDiv', { "toolbox": configToolbox });
 	blocklyWorkspace.setTheme(Blockly["Themes"]["NepoClassic"]);
+	bricklyWorkspace.setTheme(Blockly["Themes"]["NepoClassic"]);
 	blocklyWorkspace.registerToolboxCategoryCallback('NEPO_VARIABLE', Variables.flyoutCallback);
 	blocklyWorkspace.registerToolboxCategoryCallback('NEPO_PROCEDURE', Procedures.flyoutCallback);
 	// add default start block
@@ -79,7 +83,7 @@ function initBlockly() {
 		"</block>" +
 		"</xml>");
 	Blockly.Xml.domToWorkspace(xml, blocklyWorkspace);
-	blocklyWorkspace.addChangeListener(function(event) { console.log(event) });
+	//blocklyWorkspace.addChangeListener(function(event) { console.log(event) });
 	resizeAll();
 	Blockly.svgResize(blocklyWorkspace);
 }
@@ -125,6 +129,6 @@ function fromXml() {
 	Blockly.Xml.domToWorkspace(xml, blocklyWorkspace);
 }
 
-$(window).on('resize', function() {
+$(window).on('resize', function () {
 	resizeAll();
 });
